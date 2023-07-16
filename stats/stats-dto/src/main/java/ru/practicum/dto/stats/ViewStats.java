@@ -1,8 +1,15 @@
 package ru.practicum.dto.stats;
 
+import lombok.*;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class ViewStats {
-//    app
-//    uri
-//    hits
+    private String app;
+    private String uri;
+    private Long hits;
+
 }
 
