@@ -23,21 +23,21 @@ services:
       - POSTGRES_USER=stats
       - POSTGRES_DB=stats-db
 
-  ewm-service:
-    build: ./main-service
-    image: ewm-main-service-image
-    container_name: ewm-main-service
-    ports:
-        - "8080:8080"
-    depends_on:
-        - ewm-db
-
-  ewm-db:
-    image: postgres:14-alpine
-    container_name: ewm-db
-    ports:
-      - "6542:5433"
-    environment:
-      - POSTGRES_DB=ewm_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=iamroot
+#  ewm-service:
+#    build: ./main-service
+#    image: ewm-main-service-image
+#    container_name: ewm-main-service
+#    ports:
+#        - "8080:8080"
+#    depends_on:
+#        - ewm-db
+#
+#  ewm-db:
+#    image: postgres:14-alpine
+#    container_name: ewm-db
+#    ports:
+#      - "6542:5433"
+#    environment:
+#      - POSTGRES_DB=ewm_db
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=iamroot
