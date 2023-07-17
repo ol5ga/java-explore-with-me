@@ -11,7 +11,8 @@
     </parent>
 
     <artifactId>stats-dto</artifactId>
-    <packaging>jar</packaging>
+
+    <name>stats-dto</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
