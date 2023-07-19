@@ -17,7 +17,7 @@ public class UserController {
     private UserService service;
 
     @GetMapping
-    public List<UserDto> getUser(@RequestParam List<Long> ids,
+    public List<UserDto> getUser(@RequestParam(required = false) List<Long> ids,
                         @RequestParam(defaultValue = "0") Integer from,
                         @RequestParam(defaultValue = "10") Integer size){
         return service.getUsers(ids,from,size);
