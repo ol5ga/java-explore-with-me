@@ -25,7 +25,7 @@ public class CategoryService {
     private CategoryRepository repository;
     private ModelMapper mapper;
     public Category addCategory(CategoryRequest name) {
-        if (name.getName() == null){
+        if (name.getName() == null || name.getName().isBlank() || name.getName().length()>50) {
             throw new ValidationException("Запрос составлен некорректно");
         }
         Category category;
@@ -36,6 +36,7 @@ public class CategoryService {
         }
         return category;
     }
+
 
     public void deleteCategory(long id) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
@@ -48,6 +49,9 @@ public class CategoryService {
     }
 
     public Category updateCategory(long id, CategoryRequest name) {
+        if (name.getName() == null || name.getName().isBlank() || name.getName().length()>50) {
+            throw new ValidationException("Запрос составлен некорректно");
+        }
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
         //TODO
 //        if(coptilatationRepository.findCategory(id){
