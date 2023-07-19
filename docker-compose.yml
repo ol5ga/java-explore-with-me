@@ -23,14 +23,14 @@ services:
       - POSTGRES_USER=stats
       - POSTGRES_DB=stats-db
 
-  ewm-main-service:
-    build: ./main-service
-    image: ewm-main-service-image
-    container_name: ewm-main-service
-    ports:
-    - "8080:8080"
-    depends_on:
-    - ewm-db
+#  ewm-main-service:
+#    build: ./main-service
+#    image: ewm-main-service-image
+#    container_name: ewm-main-service
+#    ports:
+#    - "8080:8080"
+#    depends_on:
+#    - ewm-db
 
   ewm-db:
     image: postgres:14-alpine
