@@ -2,10 +2,15 @@ package ru.practicum.ewm.service;
 
 import lombok.Builder;
 import lombok.Data;
+import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.CategoryRequest;
+import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
+import ru.practicum.ewm.exceptions.ValidationException;
+import ru.practicum.ewm.model.User;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.repository.category.CategoryRepository;
 
@@ -18,11 +23,18 @@ import java.util.List;
 public class CategoryService {
 
     private CategoryRepository repository;
+    private ModelMapper mapper;
     public Category addCategory(CategoryRequest name) {
-        Category category = Category.builder()
-                .name(name.getName())
-                .build();
-        return repository.save(category);
+        if (name.getName() == null){
+            throw new ValidationException("Запрос составлен некорректно");
+        }
+        Category category;
+        try {
+            category = repository.save(mapper.map(name, Category.class));
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConflictException("Нарушение целостности данных");
+        }
+        return category;
     }
 
     public void deleteCategory(long id) {
@@ -44,7 +56,11 @@ public class CategoryService {
         if (name.getName() != null){
             category.setName(name.getName());
         }
+        try {
         repository.save(category);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConflictException("Нарушение целостности данных");
+        }
         return repository.findById(category.getId()).orElseThrow();
     }
 
