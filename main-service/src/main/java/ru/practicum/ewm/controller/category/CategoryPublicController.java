@@ -2,12 +2,10 @@ package ru.practicum.ewm.controller.category;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.model.Category;
+import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.service.CategoryService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController

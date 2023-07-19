@@ -6,8 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.CategoryRequest;
 import ru.practicum.ewm.exceptions.StorageException;
-import ru.practicum.ewm.model.Category;
-import ru.practicum.ewm.repository.CategoryRepository;
+import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.repository.category.CategoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;

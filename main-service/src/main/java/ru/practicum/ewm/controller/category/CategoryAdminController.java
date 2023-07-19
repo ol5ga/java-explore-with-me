@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.CategoryRequest;
-import ru.practicum.ewm.model.Category;
+import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.service.CategoryService;
 
 @RestController
