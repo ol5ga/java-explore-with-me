@@ -23,4 +23,9 @@ public class CategoryAdminController {
     public void deleteCategory(@PathVariable long id){
         service.deleteCategory(id);
     }
+
+    @PatchMapping("/{id}")
+    public Category updateCategory(@PathVariable long id, @RequestBody CategoryRequest name){
+        return service.updateCategory(id,name);
+    }
 }

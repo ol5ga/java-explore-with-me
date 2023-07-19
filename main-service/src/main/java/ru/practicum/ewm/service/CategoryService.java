@@ -30,4 +30,17 @@ public class CategoryService {
 //
         repository.delete(category);
     }
+
+    public Category updateCategory(long id, CategoryRequest name) {
+        Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
+        //TODO
+//        if(coptilatationRepository.findCategory(id){
+//        throw new ConflictException("Нарушение целостности данных")
+//
+        if (name.getName() != null){
+            category.setName(name.getName());
+        }
+        repository.save(category);
+        return repository.findById(category.getId()).orElseThrow();
+    }
 }
