@@ -2,11 +2,15 @@ package ru.practicum.ewm.service;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.CategoryRequest;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.Category;
 import ru.practicum.ewm.repository.CategoryRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Data
@@ -42,5 +46,21 @@ public class CategoryService {
         }
         repository.save(category);
         return repository.findById(category.getId()).orElseThrow();
+    }
+
+    public List<Category> getAllCategories(Integer from, Integer size) {
+        List<Category> all = new ArrayList<>();
+        if (from < 0 || size < 0) {
+            throw new IllegalArgumentException("Запрос составлен некорректно");
+        }
+        all = repository.findAll(PageRequest.of(from/size, size)).toList();
+        return all;
+    }
+
+    public Category getCategory(long id) {
+        if (id<0){
+            throw new IllegalArgumentException("Запрос составлен некорректно");
+        }
+        return repository.findById(id).orElseThrow(()-> new StorageException("Категория не найдена или недоступна"));
     }
 }

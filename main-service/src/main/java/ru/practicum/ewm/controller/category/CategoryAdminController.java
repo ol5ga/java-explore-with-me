@@ -1,7 +1,7 @@
-package ru.practicum.ewm.controller;
+package ru.practicum.ewm.controller.category;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.CategoryRequest;
 import ru.practicum.ewm.model.Category;
@@ -15,11 +15,13 @@ public class CategoryAdminController {
     private CategoryService service;
 
     @PostMapping
+    @ResponseStatus(code = HttpStatus.CREATED)
     public Category addCategory(@RequestBody CategoryRequest name){
         return service.addCategory(name);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable long id){
         service.deleteCategory(id);
     }
