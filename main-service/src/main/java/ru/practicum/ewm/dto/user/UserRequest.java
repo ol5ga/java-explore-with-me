@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @Data
 @Builder
 @AllArgsConstructor
-public class UserResponse {
+public class UserRequest {
     @Email
     @Size(min = 6, max = 254)
     @NotBlank

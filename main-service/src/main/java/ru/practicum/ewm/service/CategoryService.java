@@ -6,11 +6,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.dto.CategoryRequest;
+import ru.practicum.ewm.dto.category.NewCategoryDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
-import ru.practicum.ewm.exceptions.ValidationException;
-import ru.practicum.ewm.model.User;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.repository.category.CategoryRepository;
 
@@ -24,7 +22,7 @@ public class CategoryService {
 
     private CategoryRepository repository;
     private ModelMapper mapper;
-    public Category addCategory(CategoryRequest name) {
+    public Category addCategory(NewCategoryDto name) {
         Category category;
         try {
             category = repository.save(mapper.map(name, Category.class));
@@ -45,7 +43,7 @@ public class CategoryService {
         repository.delete(category);
     }
 
-    public Category updateCategory(long id, CategoryRequest name) {
+    public Category updateCategory(long id, NewCategoryDto name) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
         //TODO
 //        if(coptilatationRepository.findCategory(id){

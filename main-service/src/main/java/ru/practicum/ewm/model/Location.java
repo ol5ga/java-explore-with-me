@@ -9,20 +9,16 @@ import javax.persistence.*;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "users")
-public class User {
-
-    @Column
-    private String email;
-
+@Table(name = "location")
+public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
     @Column
-    private Long id;
-
+    private Float lat;
     @Column
-    private String name;
+    private Float lon;
 }
