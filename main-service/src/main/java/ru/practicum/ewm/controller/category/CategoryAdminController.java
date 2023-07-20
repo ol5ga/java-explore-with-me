@@ -7,6 +7,8 @@ import ru.practicum.ewm.dto.CategoryRequest;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.service.CategoryService;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping(path = "/admin/categories")
 @AllArgsConstructor
@@ -16,7 +18,7 @@ public class CategoryAdminController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Category addCategory(@RequestBody CategoryRequest name){
+    public Category addCategory(@Valid @RequestBody CategoryRequest name){
         return service.addCategory(name);
     }
 

@@ -28,12 +28,6 @@ public class UserService {
     private ModelMapper mapper;
 
     public UserDto addUser(UserResponse userResponse) {
-        if(userResponse.getName() == null || userResponse.getEmail() == null ||
-                userResponse.getName().isBlank() || userResponse.getEmail().isBlank() ||
-                userResponse.getName().length()<2 || userResponse.getName().length()>250 ||
-                userResponse.getEmail().length()<6 || userResponse.getEmail().length()>254){
-            throw new ValidationException("Запрос составлен некорректно");
-        }
         User user;
         try {
             user = repository.save(mapper.map(userResponse,User.class));
