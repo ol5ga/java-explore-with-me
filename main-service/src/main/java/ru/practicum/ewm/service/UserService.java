@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.dto.user.UserMapper;
 import ru.practicum.ewm.dto.user.UserRequest;
 import ru.practicum.ewm.dto.user.UserDto;
 import ru.practicum.ewm.exceptions.ConflictException;
@@ -32,7 +33,7 @@ public class UserService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Нарушение целостности данных");
         }
-        return toUserDto(user);
+        return UserMapper.toUserDto(user);
     }
 
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
@@ -46,17 +47,9 @@ public class UserService {
             users = repository.findAllById(ids);
         }
         return users.stream()
-                .map(user -> toUserDto(user))
+                .map(user -> UserMapper.toUserDto(user))
                 .collect(Collectors.toList());
 
-    }
-
-    private UserDto toUserDto(User user){
-        return UserDto.builder()
-                .email(user.getEmail())
-                .id(user.getId())
-                .name(user.getName())
-                .build();
     }
 
     public void deleteUser(long id) {

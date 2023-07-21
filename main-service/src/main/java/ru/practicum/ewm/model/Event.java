@@ -18,6 +18,9 @@ import java.util.List;
 @Entity
 @Table(name = "events")
 public class Event {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @Column
     private String annotation;
     @JoinColumn(name = "category_id")
@@ -30,11 +33,8 @@ public class Event {
     private LocalDateTime createdOn;
     @Column
     private String description;
-    @Column
+    @Column(name ="event_date")
     private LocalDateTime eventDate;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     @JoinColumn(name ="initiator_id")
     @OneToOne
     private User initiator;
