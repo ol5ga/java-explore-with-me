@@ -7,13 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.event.NewEventDto;
-import ru.practicum.ewm.model.Event;
+import ru.practicum.ewm.dto.event.UpdateEventUserRequest;
 import ru.practicum.ewm.service.EventService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -36,5 +35,15 @@ public class EventPrivateController {
     public EventFullDto addEvent(@PathVariable long userId, @Valid @RequestBody NewEventDto request){
 
         return service.addEvent(userId, request);
+    }
+
+    @GetMapping(path = "/{userId}/events/{eventId}")
+    public EventFullDto getEvent(@PathVariable long userId, @PathVariable long eventId){
+        return service.getId(userId,eventId);
+    }
+
+    @PatchMapping(path = "/{userId}/events/{eventId}")
+    public EventFullDto updateEvent(@PathVariable long userId, @PathVariable long eventId,@RequestBody UpdateEventUserRequest request ){
+        return service.updateEvent(userId,eventId,request);
     }
 }

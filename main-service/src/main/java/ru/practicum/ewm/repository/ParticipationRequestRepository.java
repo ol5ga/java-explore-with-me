@@ -1,8 +1,8 @@
 package ru.practicum.ewm.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.practicum.ewm.model.Event;
-import ru.practicum.ewm.model.ParticipationRequest;
+import ru.practicum.ewm.model.event.Event;
+import ru.practicum.ewm.model.request.ParticipationRequest;
 
 import java.util.List;
 

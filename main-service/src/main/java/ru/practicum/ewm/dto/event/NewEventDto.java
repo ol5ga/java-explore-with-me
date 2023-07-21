@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 import ru.practicum.ewm.dto.LocationDto;
-import ru.practicum.ewm.model.Location;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotBlank;

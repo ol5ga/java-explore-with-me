@@ -1,14 +1,11 @@
 package ru.practicum.ewm.dto.event;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.practicum.ewm.dto.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
-import ru.practicum.ewm.dto.user.UserDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
-import ru.practicum.ewm.model.Event;
-import ru.practicum.ewm.model.Location;
-import ru.practicum.ewm.model.ParticipationRequest;
+import ru.practicum.ewm.model.event.Event;
+import ru.practicum.ewm.model.location.Location;
+import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.user.User;
 

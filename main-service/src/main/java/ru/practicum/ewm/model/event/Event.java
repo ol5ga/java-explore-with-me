@@ -1,9 +1,11 @@
-package ru.practicum.ewm.model;
+package ru.practicum.ewm.model.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.ewm.model.location.Location;
+import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.user.User;
 
