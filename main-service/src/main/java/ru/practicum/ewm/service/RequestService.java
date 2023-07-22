@@ -2,9 +2,13 @@ package ru.practicum.ewm.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.dto.ParticipationRequestDto;
+import ru.practicum.ewm.dto.request.ParticipationRequestDto;
+import ru.practicum.ewm.dto.request.RequestMapper;
+import ru.practicum.ewm.exceptions.ConflictException;
+import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.user.User;
@@ -13,11 +17,11 @@ import ru.practicum.ewm.repository.ParticipationRequestRepository;
 import ru.practicum.ewm.repository.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Data
 @AllArgsConstructor
+@Slf4j
 public class RequestService {
 
     ParticipationRequestRepository repository;
@@ -27,15 +31,30 @@ public class RequestService {
     ModelMapper mapper;
     public ParticipationRequestDto addRequest(long userId, long eventId) {
         LocalDateTime now = LocalDateTime.now();
-        User requester = userRepository.findById(userId).orElseThrow();
-        Event event = eventRepository.findById(eventId).orElseThrow();
+        User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
+        Event event = eventRepository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
+        if(userId == event.getInitiator().getId()||
+                repository.findFirstByEvent_IdAndRequester_Id(eventId,userId) != null){
+            log.info("Для этого пользователя нельзя создать запрос");
+            throw new ConflictException("Нарушение целостности данных");
+        }
+        if (!event.getState().equals("PUBLISHED")) {
+            log.info("Событие не опубликовано");
+            throw new ConflictException("Нарушение целостности данных");
+        }
+        if(repository.findAllByEventAndState(event,"CONFIRMED").size() == event.getParticipantLimit()){
+            log.info("Достигнут лимит участников");
+            throw new ConflictException("Нарушение целостности данных");
+        }
         ParticipationRequest request = ParticipationRequest.builder()
                 .requester(requester)
                 .created(now)
                 .event(event)
                 .state("")
                 .build();
-        repository.save(request);
-        return mapper.map(repository.save(request),ParticipationRequestDto.class);
+        if(!event.getRequestModeration()){
+            request.setState("CONFIRMED");
+        }
+        return RequestMapper.toParticipationRequestDto(repository.save(request));
     }
 }
