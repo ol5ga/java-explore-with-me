@@ -44,7 +44,7 @@ public class Event {
     @OneToOne
     private Location location;
     @Column
-    private boolean paid;
+    private Boolean paid;
     @Column(name ="participant_limit")
     private Integer participantLimit;
     @Column(name ="published_on")

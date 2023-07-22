@@ -10,6 +10,7 @@ import ru.practicum.ewm.dto.category.NewCategoryDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.category.CategoryRepository;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.List;
 public class CategoryService {
 
     private CategoryRepository repository;
+    private EventRepository eventRepository;
     private ModelMapper mapper;
     public Category addCategory(NewCategoryDto name) {
         Category category;
@@ -36,19 +38,17 @@ public class CategoryService {
     public void deleteCategory(long id) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
 
-        //TODO
-//        if(coptilatationRepository.findCategory(id){
-//        throw new ConflictException(""Существуют события, связанные с категорией)
-//
+        if(eventRepository.findAllByCategory_Id(id).size() != 0) {
+            throw new ConflictException("Существуют события, связанные с категорией");
+        }
         repository.delete(category);
     }
 
     public Category updateCategory(long id, NewCategoryDto name) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
-        //TODO
-//        if(coptilatationRepository.findCategory(id){
-//        throw new ConflictException("Нарушение целостности данных")
-//
+        if(eventRepository.findAllByCategory_Id(id).size() != 0) {
+            throw new ConflictException("Существуют события, связанные с категорией");
+        }
         if (name.getName() != null){
             category.setName(name.getName());
         }

@@ -34,7 +34,7 @@ public class NewEventDto {
     @NotNull
     private LocationDto location;
     @Nullable
-    private boolean paid;
+    private Boolean paid;
     @Nullable
     private Integer participantLimit;
     @Nullable

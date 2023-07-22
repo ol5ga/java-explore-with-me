@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest,Long> {
 
-    List<ParticipationRequest> findAllByEventAndState(Event event, String state);
+    List<ParticipationRequest> findAllByEventAndStateOrderByCreated(Event event, String state);
 
     List<ParticipationRequest> findAllByEvent(Event event);
 

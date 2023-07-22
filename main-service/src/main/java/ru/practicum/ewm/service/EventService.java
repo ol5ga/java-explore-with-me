@@ -51,7 +51,7 @@ public class EventService {
         List<Event> events = repository.findAllByInitiatorOrderById(initiator, PageRequest.of(from/size, size));
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
-                        requestRepository.findAllByEventAndState(event,"APPROVED").size(),
+                        requestRepository.findAllByEventAndStateOrderByCreated(event,"APPROVED").size(),
                         mapper.map(event.getCategory(), CategoryDto.class),
                         mapper.map(event.getInitiator(),UserShortDto.class)))
                 .collect(Collectors.toList());
@@ -92,6 +92,7 @@ public class EventService {
         if (event.getInitiator().getId() != userId ){
             throw new ValidationException("Запрос составлен некорректно");
         }
+
         if(request.getAnnotation() !=null){
             event.setAnnotation(request.getAnnotation());
         }
@@ -108,7 +109,8 @@ public class EventService {
             event.setEventDate(request.getEventDate());
         }
         if (request.getLocation() != null){
-            event.setLocation(mapper.map(request.getLocation(), Location.class));
+            Location location = locationRepository.save(mapper.map(request.getLocation(), Location.class));
+            event.setLocation(location);
         }
         if(request.getPaid() != null){
             event.setPaid(request.getPaid());
@@ -151,10 +153,10 @@ public class EventService {
         if(userId != event.getInitiator().getId()){
             throw new ValidationException("Запрос составлен некорректно");
         }
-//        if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
-//            throw new ValidationException("Запрос составлен некорректно");
-//        }
-        int pendingRequest = requestRepository.findAllByEventAndState(event,"PENDING").size();
+        if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
+            throw new ValidationException("Запрос составлен некорректно");
+        }
+        int pendingRequest = requestRepository.findAllByEventAndStateOrderByCreated(event,"PENDING").size();
         if(event.getParticipantLimit() == pendingRequest){
             throw new ConflictException("Достигнут лимит одобренных заявок");
         }
@@ -176,8 +178,8 @@ public class EventService {
                 pR.setState("REJECTED");
             }
         }
-        List<ParticipationRequest> confirmed = requestRepository.findAllByEventAndState(event,"CONFIRMED");
-        List<ParticipationRequest> rejected = requestRepository.findAllByEventAndState(event,"REJECTED");
+        List<ParticipationRequest> confirmed = requestRepository.findAllByEventAndStateOrderByCreated(event,"CONFIRMED");
+        List<ParticipationRequest> rejected = requestRepository.findAllByEventAndStateOrderByCreated(event,"REJECTED");
         List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
         List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
     return EventRequestStatusUpdateResult.builder()
@@ -186,13 +188,79 @@ public class EventService {
             .build();
     }
 
+
+
+    public List<EventFullDto> searchEvents(List<Long> users, List<String> states, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        //TODO
+
+        return new ArrayList<>();
+    }
+
+    public EventFullDto adminUpdateEvent(long eventId, UpdateEventAdminRequest request) {
+        Event event = repository.findById(eventId).orElseThrow(()->new StorageException("Событие не найдено или недоступно"));
+        LocalDateTime now = LocalDateTime.now();
+        if(request.getStateAction().equals("PUBLISH_EVENT") && !event.getState().equals("PENDING")){
+            throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+        }
+        if(request.getStateAction().equals("REJECT_EVENT") && event.getState().equals("PUBLISHED")){
+            throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+        }
+
+        if(request.getAnnotation() !=null){
+            event.setAnnotation(request.getAnnotation());
+        }
+        if (request.getCategory() != null){
+            event.setCategory(categoryRepository.findById(request.getCategory()).orElseThrow());
+        }
+        if(request.getDescription() != null){
+            event.setDescription(request.getDescription());
+        }
+        if(request.getEventDate() != null){
+            if(request.getEventDate().isBefore(now.plusHours(1))){
+                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+            }
+            event.setEventDate(request.getEventDate());
+        }
+        if (request.getLocation() != null){
+            Location location = locationRepository.save(mapper.map(request.getLocation(), Location.class));
+            event.setLocation(location);
+        }
+        if(request.getPaid() != null){
+            event.setPaid(request.getPaid());
+        }
+        if(request.getParticipantLimit() != null){
+            event.setParticipantLimit(request.getParticipantLimit());
+        }
+        if(request.getRequestModeration() != event.getRequestModeration()){
+            event.setRequestModeration(request.getRequestModeration());
+        }
+        if(request.getStateAction() != null){
+            if(request.getStateAction().equals("PUBLISH_EVENT")) {
+                event.setState("PUBLISHED");
+            } else if(request.getStateAction().equals("REJECT_EVENT")){
+                event.setState("REJECTED");
+            }
+        }
+        if(request.getTitle() != null){
+            event.setTitle(request.getTitle());
+        }
+        repository.save(event);
+        return collectToEventFullDto(repository.save(event));
+    }
+    public EventFullDto getEvent(long eventId) {
+        Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
+        if(!event.getState().equals("PUBLISHED")){
+            throw new ValidationException("Запрос составлен некорректно");
+        }
+        //TODO добавить в статистику и взять из нее
+        return collectToEventFullDto(event);
+    }
+
     private EventFullDto collectToEventFullDto(Event event){
-        Integer confirmedRequests = requestRepository.findAllByEventAndState(event,"APPROVED").size();
+        Integer confirmedRequests = requestRepository.findAllByEventAndStateOrderByCreated(event,"APPROVED").size();
         CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
         UserShortDto userDto = mapper.map(event.getInitiator(),UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
         return EventMapper.toEventFullDto(event,confirmedRequests,categoryDto,userDto,locationDto);
     }
-
-
 }
