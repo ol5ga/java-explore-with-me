@@ -26,7 +26,7 @@ public class ParticipationRequest {
     @Column
     private LocalDateTime created;
     @JoinColumn(name ="event_id")
-    @OneToOne
+    @ManyToOne
     private Event event;
     @Column
     private String state;

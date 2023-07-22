@@ -1,6 +1,6 @@
 package ru.practicum.ewm.dto.event;
 
-import ru.practicum.ewm.dto.LocationDto;
+import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
 import ru.practicum.ewm.model.event.Event;
@@ -19,7 +19,7 @@ public class EventMapper {
         return Event.builder()
                 .annotation(request.getAnnotation())
                 .category(category)
-                .requests(new ArrayList<>())
+//                .requests(new ArrayList<>())
                 .createdOn(now)
                 .description(request.getDescription())
                 .eventDate(request.getEventDate())
@@ -34,25 +34,25 @@ public class EventMapper {
                 .views(0)
                 .build();
     }
-    public static Event toEvent(NewEventDto request, Category category, List<ParticipationRequest> requests, LocalDateTime now, User user, Location location){
-        return Event.builder()
-                .annotation(request.getAnnotation())
-                .category(category)
-                .requests(requests)
-                .createdOn(now)
-                .description(request.getDescription())
-                .eventDate(request.getEventDate())
-                .initiator(user)
-                .location(location)
-                .paid(request.isPaid())
-                .participantLimit(request.getParticipantLimit())
-                .publishedOn(null)
-                .requestModeration(request.getRequestModeration())
-                .state("PENDING")
-                .title(request.getTitle())
-                .views(0)
-                .build();
-    }
+//    public static Event toEvent(NewEventDto request, Category category, List<ParticipationRequest> requests, LocalDateTime now, User user, Location location){
+//        return Event.builder()
+//                .annotation(request.getAnnotation())
+//                .category(category)
+//                .requests(requests)
+//                .createdOn(now)
+//                .description(request.getDescription())
+//                .eventDate(request.getEventDate())
+//                .initiator(user)
+//                .location(location)
+//                .paid(request.isPaid())
+//                .participantLimit(request.getParticipantLimit())
+//                .publishedOn(null)
+//                .requestModeration(request.getRequestModeration())
+//                .state("PENDING")
+//                .title(request.getTitle())
+//                .views(0)
+//                .build();
+//    }
     public static EventFullDto toEventFullDto(Event event, Integer confirmedRequests,CategoryDto categoryDto,UserShortDto userDto,LocationDto locationDto){
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
