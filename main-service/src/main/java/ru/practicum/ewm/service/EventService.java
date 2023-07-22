@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.event.*;
+import ru.practicum.ewm.dto.request.ParticipationRequestDto;
+import ru.practicum.ewm.dto.request.RequestMapper;
 import ru.practicum.ewm.dto.user.UserShortDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
@@ -15,6 +17,7 @@ import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.LocationRepository;
@@ -132,5 +135,18 @@ public class EventService {
         UserShortDto userDto = mapper.map(event.getInitiator(),UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
         return EventMapper.toEventFullDto(event,confirmedRequests,categoryDto,userDto,locationDto);
+    }
+
+    public List<ParticipationRequestDto> getEventsRequests(long userId, long eventId) {
+        Event event = repository.findById(eventId).orElseThrow(()->new StorageException("Событие не найдено или недоступно"));
+        if(userId != event.getInitiator().getId()){
+            throw new ValidationException("Запрос составлен некорректно");
+        }
+        List<ParticipationRequest> requests = requestRepository.findAllByEvent(event);
+        List<ParticipationRequestDto> response = new ArrayList<>();
+        response = requests.stream()
+                .map(RequestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
+        return response;
     }
 }

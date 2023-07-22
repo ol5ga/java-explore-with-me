@@ -32,8 +32,6 @@ public class RequestService {
     ModelMapper mapper;
     public ParticipationRequestDto addRequest(long userId, long eventId) {
         LocalDateTime now = LocalDateTime.now();
-        List<User> users = userRepository.findAll();
-        List<Event> eents = eventRepository.findAll();
         User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
         if(userId == event.getInitiator().getId()||
