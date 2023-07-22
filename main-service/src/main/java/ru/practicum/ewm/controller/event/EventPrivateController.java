@@ -8,6 +8,8 @@ import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.event.NewEventDto;
 import ru.practicum.ewm.dto.event.UpdateEventUserRequest;
+import ru.practicum.ewm.dto.request.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.dto.request.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.dto.request.ParticipationRequestDto;
 import ru.practicum.ewm.service.EventService;
 
@@ -51,5 +53,11 @@ public class EventPrivateController {
     @GetMapping(path = "/{userId}/events/{eventId}/requests")
     public List<ParticipationRequestDto> getEventsRequests(@PathVariable long userId, @PathVariable long eventId){
         return service.getEventsRequests(userId, eventId);
+    }
+
+    @PatchMapping(path = "/{userId}/events/{eventId}/requests")
+    public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable long userId, @PathVariable long eventId,
+                                                              @RequestBody EventRequestStatusUpdateRequest requests){
+        return service.updateRequestStatus(userId, eventId,requests);
     }
 }

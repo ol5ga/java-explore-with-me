@@ -2,12 +2,15 @@ package ru.practicum.ewm.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.event.*;
+import ru.practicum.ewm.dto.request.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.dto.request.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.dto.request.ParticipationRequestDto;
 import ru.practicum.ewm.dto.request.RequestMapper;
 import ru.practicum.ewm.dto.user.UserShortDto;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @Data
 @AllArgsConstructor
+@Slf4j
 public class EventService {
 
     private EventRepository repository;
@@ -129,14 +133,6 @@ public class EventService {
         return collectToEventFullDto(repository.save(event));
     }
 
-    private EventFullDto collectToEventFullDto(Event event){
-        Integer confirmedRequests = requestRepository.findAllByEventAndState(event,"APPROVED").size();
-        CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
-        UserShortDto userDto = mapper.map(event.getInitiator(),UserShortDto.class);
-        LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
-        return EventMapper.toEventFullDto(event,confirmedRequests,categoryDto,userDto,locationDto);
-    }
-
     public List<ParticipationRequestDto> getEventsRequests(long userId, long eventId) {
         Event event = repository.findById(eventId).orElseThrow(()->new StorageException("Событие не найдено или недоступно"));
         if(userId != event.getInitiator().getId()){
@@ -149,4 +145,54 @@ public class EventService {
                 .collect(Collectors.toList());
         return response;
     }
+
+    public EventRequestStatusUpdateResult updateRequestStatus(long userId, long eventId, EventRequestStatusUpdateRequest request) {
+        Event event = repository.findById(eventId).orElseThrow(()->new StorageException("Событие не найдено или недоступно"));
+        if(userId != event.getInitiator().getId()){
+            throw new ValidationException("Запрос составлен некорректно");
+        }
+//        if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
+//            throw new ValidationException("Запрос составлен некорректно");
+//        }
+        int pendingRequest = requestRepository.findAllByEventAndState(event,"PENDING").size();
+        if(event.getParticipantLimit() == pendingRequest){
+            throw new ConflictException("Достигнут лимит одобренных заявок");
+        }
+        List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
+        if(request.getStatus().equals("CONFIRMED")) {
+            for (ParticipationRequest pR : requests) {
+                if (!pR.getState().equals("PENDING")) {
+                    throw new ConflictException("Заявка должна быть в состоянии ожидания");
+                }
+                if (event.getParticipantLimit() != pendingRequest) {
+                    pendingRequest++;
+                    pR.setState("CONFIRMED");
+                } else{
+                    pR.setState("REJECTED");
+                }
+            }
+        } else {
+            for (ParticipationRequest pR : requests) {
+                pR.setState("REJECTED");
+            }
+        }
+        List<ParticipationRequest> confirmed = requestRepository.findAllByEventAndState(event,"CONFIRMED");
+        List<ParticipationRequest> rejected = requestRepository.findAllByEventAndState(event,"REJECTED");
+        List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
+        List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
+    return EventRequestStatusUpdateResult.builder()
+            .confirmedRequests(confirmedRequests)
+            .rejectedRequests(rejectedRequests)
+            .build();
+    }
+
+    private EventFullDto collectToEventFullDto(Event event){
+        Integer confirmedRequests = requestRepository.findAllByEventAndState(event,"APPROVED").size();
+        CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
+        UserShortDto userDto = mapper.map(event.getInitiator(),UserShortDto.class);
+        LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
+        return EventMapper.toEventFullDto(event,confirmedRequests,categoryDto,userDto,locationDto);
+    }
+
+
 }
