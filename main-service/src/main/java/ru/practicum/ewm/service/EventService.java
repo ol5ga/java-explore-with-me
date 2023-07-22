@@ -79,7 +79,7 @@ public class EventService {
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-        if(!event.getState().equals("PUBLISHED")|| request.getEventDate().isBefore(now.plusHours(2))){
+        if(!(event.getState().equals("PENDING") || event.getState().equals("CANCELED"))){
             throw new ConflictException("Событие не удовлетворяет правилам редактирования");
         }
         if (event.getInitiator().getId() != userId ){
@@ -87,27 +87,39 @@ public class EventService {
         }
         if(request.getAnnotation() !=null){
             event.setAnnotation(request.getAnnotation());
-        } else if (request.getCategory() != null){
+        }
+        if (request.getCategory() != null){
             event.setCategory(mapper.map(request.getCategory(), Category.class));
-        } else if(request.getDescription() != null){
+        }
+        if(request.getDescription() != null){
             event.setDescription(request.getDescription());
-        } else if(request.getEventDate() != null){
+        }
+        if(request.getEventDate() != null){
+            if(request.getEventDate().isBefore(now.plusHours(2))){
+                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+            }
             event.setEventDate(request.getEventDate());
-        } else if (request.getLocation() != null){
+        }
+        if (request.getLocation() != null){
             event.setLocation(mapper.map(request.getLocation(), Location.class));
-        } else if(request.getPaid() != null){
+        }
+        if(request.getPaid() != null){
             event.setPaid(request.getPaid());
-        } else if(request.getParticipantLimit() != null){
+        }
+        if(request.getParticipantLimit() != null){
             event.setParticipantLimit(request.getParticipantLimit());
-        } else if(request.getRequestModeration() != event.getRequestModeration()){
+        }
+        if(request.getRequestModeration() != event.getRequestModeration()){
             event.setRequestModeration(request.getRequestModeration());
-        } else if(request.getStateAction() != null){
+        }
+        if(request.getStateAction() != null){
             if(request.getStateAction().equals("SEND_TO_REVIEW")) {
                 event.setState("PENDING");
             } else if(request.getStateAction().equals("CANCEL_REVIEW")){
                 event.setState("CANCELED");
             }
-        } else if(request.getTitle() != null){
+        }
+        if(request.getTitle() != null){
             event.setTitle(request.getTitle());
         }
         repository.save(event);
