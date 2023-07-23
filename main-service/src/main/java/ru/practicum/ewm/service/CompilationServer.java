@@ -10,6 +10,7 @@ import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
 import ru.practicum.ewm.dto.compilations.CompilationMapper;
 import ru.practicum.ewm.dto.compilations.NewCompilationDto;
+import ru.practicum.ewm.dto.compilations.UpdateCompilationRequest;
 import ru.practicum.ewm.dto.event.EventMapper;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.user.UserMapper;
@@ -53,6 +54,32 @@ public class CompilationServer {
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Нарушение целостности данных");
         }
+        return collectToCompilationDto(compilation);
+    }
+
+    public void deleteCompilation(Long compId) {
+        Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
+        repository.deleteById(compId);
+    }
+
+    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
+        Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
+        if(request.getPinned()!= null){
+            compilation.setPinned(request.getPinned());
+        }
+        if(request.getTitle() != null){
+            compilation.setTitle(request.getTitle());
+        }
+        if(request.getEvents() != null){
+            compilation.setEvents(request.getEvents().stream()
+                    .map(event -> eventRepository.findById(event).orElseThrow())
+                    .collect(Collectors.toList()));
+        }
+        Compilation newCompilation = repository.save(compilation);
+        return collectToCompilationDto(newCompilation);
+    }
+
+    private CompilationDto collectToCompilationDto(Compilation compilation){
         List<EventShortDto> shortEvents = new ArrayList<>();
         for(Event event: compilation.getEvents()){
             Integer confirmedRequests = requestRepository.findAllByEvent(event).size();

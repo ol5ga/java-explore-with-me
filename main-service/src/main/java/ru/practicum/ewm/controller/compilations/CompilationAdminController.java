@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
 import ru.practicum.ewm.dto.compilations.NewCompilationDto;
+import ru.practicum.ewm.dto.compilations.UpdateCompilationRequest;
 import ru.practicum.ewm.service.CompilationServer;
 
 @RestController
@@ -17,5 +18,16 @@ public class CompilationAdminController {
     @ResponseStatus(code = HttpStatus.CREATED)
     public CompilationDto addCompilation(@RequestBody NewCompilationDto request){
         return service.addCompilation(request);
+    }
+
+    @DeleteMapping(path = "/{compId}")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void deleteCompilation(@PathVariable Long compId){
+        service.deleteCompilation(compId);
+    }
+
+    @PatchMapping(path = "/{compId}")
+    public CompilationDto updateCompilation(@PathVariable Long compId, @RequestBody UpdateCompilationRequest request){
+        return service.updateCompilation(compId,request);
     }
 }
