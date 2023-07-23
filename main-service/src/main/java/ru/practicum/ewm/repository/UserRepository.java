@@ -1,4 +1,4 @@
-package ru.practicum.ewm.repository.user;
+package ru.practicum.ewm.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.ewm.model.user.User;

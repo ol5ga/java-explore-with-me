@@ -25,8 +25,8 @@ import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.LocationRepository;
 import ru.practicum.ewm.repository.ParticipationRequestRepository;
-import ru.practicum.ewm.repository.category.CategoryRepository;
-import ru.practicum.ewm.repository.user.UserRepository;
+import ru.practicum.ewm.repository.CategoryRepository;
+import ru.practicum.ewm.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

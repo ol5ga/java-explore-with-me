@@ -12,7 +12,7 @@ import ru.practicum.ewm.dto.user.UserDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.user.User;
-import ru.practicum.ewm.repository.user.UserRepository;
+import ru.practicum.ewm.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;

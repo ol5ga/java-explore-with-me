@@ -11,7 +11,7 @@ import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.repository.EventRepository;
-import ru.practicum.ewm.repository.category.CategoryRepository;
+import ru.practicum.ewm.repository.CategoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;
