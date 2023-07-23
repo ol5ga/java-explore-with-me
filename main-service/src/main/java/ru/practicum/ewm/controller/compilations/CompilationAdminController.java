@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
 import ru.practicum.ewm.dto.compilations.NewCompilationDto;
 import ru.practicum.ewm.dto.compilations.UpdateCompilationRequest;
-import ru.practicum.ewm.service.CompilationServer;
+import ru.practicum.ewm.service.CompilationService;
 
 @RestController
 @RequestMapping(path = "/admin/compilations")
 @AllArgsConstructor
 public class CompilationAdminController {
-    private CompilationServer service;
+    private CompilationService service;
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)

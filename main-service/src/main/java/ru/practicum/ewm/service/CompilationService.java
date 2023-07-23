@@ -2,9 +2,10 @@ package ru.practicum.ewm.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
@@ -13,7 +14,6 @@ import ru.practicum.ewm.dto.compilations.NewCompilationDto;
 import ru.practicum.ewm.dto.compilations.UpdateCompilationRequest;
 import ru.practicum.ewm.dto.event.EventMapper;
 import ru.practicum.ewm.dto.event.EventShortDto;
-import ru.practicum.ewm.dto.user.UserMapper;
 import ru.practicum.ewm.dto.user.UserShortDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
@@ -22,7 +22,6 @@ import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.repository.CompilationRepository;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.ParticipationRequestRepository;
-import ru.practicum.ewm.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 @Service
 @Data
 @AllArgsConstructor
-public class CompilationServer {
+public class CompilationService {
     private CompilationRepository repository;
     private EventRepository eventRepository;
     private ParticipationRequestRepository requestRepository;
@@ -79,6 +78,16 @@ public class CompilationServer {
         return collectToCompilationDto(newCompilation);
     }
 
+    public List<CompilationDto> getCompilations(boolean pinned, int from, int size) {
+        if (from < 0 || size < 0) {
+            throw new IllegalArgumentException("Запрос составлен некорректно");
+        }
+        List<Compilation> compilations = repository.findAllByPinned(pinned,PageRequest.of(from/size, size));
+        return compilations.stream()
+                .map(this::collectToCompilationDto)
+                .collect(Collectors.toList());
+    }
+
     private CompilationDto collectToCompilationDto(Compilation compilation){
         List<EventShortDto> shortEvents = new ArrayList<>();
         for(Event event: compilation.getEvents()){
@@ -89,5 +98,10 @@ public class CompilationServer {
             shortEvents.add(shortEvent);
         }
         return CompilationMapper.toCompilationDto(compilation, shortEvents);
+    }
+
+    public CompilationDto getCompilation(Long compId) {
+        Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
+        return collectToCompilationDto(compilation);
     }
 }
