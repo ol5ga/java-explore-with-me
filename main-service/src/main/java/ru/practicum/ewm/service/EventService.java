@@ -86,13 +86,12 @@ public class EventService {
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-        if(!(event.getState().equals("PENDING") || event.getState().equals("CANCELED"))){
+        if(event.getState().equals("PENDING") || event.getState().equals("CANCELED")){
             throw new ConflictException("Событие не удовлетворяет правилам редактирования");
         }
         if (event.getInitiator().getId() != userId ){
             throw new ValidationException("Запрос составлен некорректно");
         }
-
         if(request.getAnnotation() !=null){
             event.setAnnotation(request.getAnnotation());
         }
@@ -154,7 +153,7 @@ public class EventService {
             throw new ValidationException("Запрос составлен некорректно");
         }
         //TODO why null??
-        event.setRequestModeration(true);
+//        event.setRequestModeration(true);
         if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
             throw new ValidationException("Запрос составлен некорректно");
         }
@@ -184,7 +183,7 @@ public class EventService {
         List<ParticipationRequest> rejected = requestRepository.findAllByEventAndStateOrderByCreated(event,"REJECTED");
         List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
         List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
-    return EventRequestStatusUpdateResult.builder()
+        return EventRequestStatusUpdateResult.builder()
             .confirmedRequests(confirmedRequests)
             .rejectedRequests(rejectedRequests)
             .build();
@@ -238,6 +237,7 @@ public class EventService {
         }
         if(request.getStateAction() != null){
             if(request.getStateAction().equals("PUBLISH_EVENT")) {
+                event.setPublishedOn(now);
                 event.setState("PUBLISHED");
             } else if(request.getStateAction().equals("REJECT_EVENT")){
                 event.setState("REJECTED");
@@ -251,9 +251,10 @@ public class EventService {
     }
     public EventFullDto getEvent(long eventId) {
         Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-        if(!event.getState().equals("PUBLISHED")){
-            throw new ValidationException("Запрос составлен некорректно");
+        if(event.getState().equals("PENDING") || event.getState().equals("CANCELED")){
+            throw new StorageException("Запрос составлен некорректно");
         }
+        event.setViews(event.getViews() + 1);
         //TODO добавить в статистику и взять из нее
         return collectToEventFullDto(event);
     }

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS events(
     paid boolean,
     participant_limit BIGINT,
     published_on TIMESTAMP WITHOUT TIME ZONE,
-    request_moderation BOOLEAN DEFAULT TRUE,
+    request_moderation BOOLEAN,
     state VARCHAR(9),
     title VARCHAR(120) NOT NULL,
     views BIGINT,

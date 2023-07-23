@@ -16,6 +16,9 @@ import java.util.List;
 
 public class EventMapper {
     public static Event toEvent(NewEventDto request, Category category, LocalDateTime now, User user, Location location){
+        if(request.getRequestModeration() == null){
+            request.setRequestModeration(true);
+        }
         return Event.builder()
                 .annotation(request.getAnnotation())
                 .category(category)

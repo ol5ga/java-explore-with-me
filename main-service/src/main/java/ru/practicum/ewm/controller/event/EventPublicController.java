@@ -27,6 +27,7 @@ public class EventPublicController {
 
     @GetMapping(path = "/{id}")
     public EventFullDto getEvent(@PathVariable long id){
+
         return service.getEvent(id);
     }
 }

@@ -34,7 +34,6 @@ public class RequestService {
         LocalDateTime now = LocalDateTime.now();
         User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
         Event event = eventRepository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-        List<ParticipationRequest> req = repository.findAll();
         if(userId == event.getInitiator().getId()||
                 repository.findFirstByEvent_IdAndRequester_Id(eventId,userId) != null){
             log.info("Для этого пользователя нельзя создать запрос");
@@ -44,9 +43,14 @@ public class RequestService {
             log.info("Событие не опубликовано");
             throw new ConflictException("Нарушение целостности данных");
         }
-        if(repository.findAllByEventAndStateOrderByCreated(event,"CONFIRMED").size() == event.getParticipantLimit()){
+        String state;
+        if(event.getParticipantLimit() == 0){
+            state = "CONFIRMED";
+        }else if(repository.findAllByEventAndStateOrderByCreated(event,"CONFIRMED").size() == event.getParticipantLimit()){
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
+        } else{
+            state = "PENDING";
         }
         //TODO why null??
         event.setRequestModeration(true);
@@ -54,11 +58,9 @@ public class RequestService {
                 .requester(requester)
                 .created(now)
                 .event(event)
-                .state("PENDING")
+                .state(state)
                 .build();
-        if(!event.getRequestModeration()){
-            request.setState("CONFIRMED");
-        }
+
         return RequestMapper.toParticipationRequestDto(repository.save(request));
     }
 }
