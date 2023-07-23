@@ -153,6 +153,8 @@ public class EventService {
         if(userId != event.getInitiator().getId()){
             throw new ValidationException("Запрос составлен некорректно");
         }
+        //TODO why null??
+        event.setRequestModeration(true);
         if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
             throw new ValidationException("Запрос составлен некорректно");
         }

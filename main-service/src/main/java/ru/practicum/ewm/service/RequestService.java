@@ -48,6 +48,8 @@ public class RequestService {
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
         }
+        //TODO why null??
+        event.setRequestModeration(true);
         ParticipationRequest request = ParticipationRequest.builder()
                 .requester(requester)
                 .created(now)
