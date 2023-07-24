@@ -55,7 +55,7 @@ public class RequestService {
         String state;
         if(event.getParticipantLimit() == 0){
             state = "CONFIRMED";
-        }else if(repository.findAllByEventAndStatusOrderByCreated(event,"CONFIRMED").size() == event.getParticipantLimit()){
+        }else if(repository.findAllByEvent(event).size() == event.getParticipantLimit()){
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
         } else{

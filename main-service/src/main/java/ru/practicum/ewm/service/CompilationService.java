@@ -58,7 +58,7 @@ public class CompilationService {
 
     public void deleteCompilation(Long compId) {
         Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
-        repository.deleteById(compId);
+        repository.delete(compilation);
     }
 
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {

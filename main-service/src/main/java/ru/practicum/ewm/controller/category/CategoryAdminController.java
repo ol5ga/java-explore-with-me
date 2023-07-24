@@ -19,6 +19,7 @@ public class CategoryAdminController {
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
     public Category addCategory(@Valid @RequestBody NewCategoryDto name){
+
         return service.addCategory(name);
     }
 
@@ -29,7 +30,7 @@ public class CategoryAdminController {
     }
 
     @PatchMapping("/{id}")
-    public Category updateCategory(@PathVariable long id, @RequestBody NewCategoryDto name){
+    public Category updateCategory(@PathVariable long id,@Valid @RequestBody NewCategoryDto name){
         return service.updateCategory(id,name);
     }
 }

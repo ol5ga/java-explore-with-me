@@ -66,6 +66,12 @@ public class EventService {
         if(request.getRequestModeration() == null){
             request.setRequestModeration(true);
         }
+        if(request.getPaid() == null){
+            request.setPaid(false);
+        }
+        if(request.getParticipantLimit() ==null){
+            request.setParticipantLimit(0);
+        }
         User user = userRepository.findById(userId).orElseThrow();
         Location location = locationRepository.save(mapper.map(request.getLocation(),Location.class));
 
@@ -85,7 +91,9 @@ public class EventService {
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-
+        if(event.getState().equals("PUBLISHED")){
+            throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+        }
         if (event.getInitiator().getId() != userId ){
             throw new ValidationException("Запрос составлен некорректно");
         }
@@ -118,9 +126,6 @@ public class EventService {
             event.setRequestModeration(request.getRequestModeration());
         }
         if(request.getStateAction() != null){
-            if(event.getState().equals("PENDING") || event.getState().equals("CANCELED")){
-                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
-            }
             if(request.getStateAction().equals("SEND_TO_REVIEW")) {
                 event.setState("PENDING");
             } else if(request.getStateAction().equals("CANCEL_REVIEW")){
@@ -229,7 +234,7 @@ public class EventService {
             event.setRequestModeration(request.getRequestModeration());
         }
         if(request.getStateAction() != null){
-            if(request.getStateAction().equals("PUBLISH_EVENT") && (event.getState().equals("PUBLISHED")||(event.getState().equals("CANCELED")))){
+            if(request.getStateAction().equals("PUBLISH_EVENT") && (event.getState().equals("PUBLISHED")||(event.getState().equals("REJECTED")))){
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
             if(request.getStateAction().equals("REJECT_EVENT") && event.getState().equals("PUBLISHED")){

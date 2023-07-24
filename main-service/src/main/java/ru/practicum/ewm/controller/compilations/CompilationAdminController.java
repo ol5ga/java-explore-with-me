@@ -8,6 +8,8 @@ import ru.practicum.ewm.dto.compilations.NewCompilationDto;
 import ru.practicum.ewm.dto.compilations.UpdateCompilationRequest;
 import ru.practicum.ewm.service.CompilationService;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping(path = "/admin/compilations")
 @AllArgsConstructor
@@ -16,7 +18,7 @@ public class CompilationAdminController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public CompilationDto addCompilation(@RequestBody NewCompilationDto request){
+    public CompilationDto addCompilation(@Valid @RequestBody NewCompilationDto request){
         return service.addCompilation(request);
     }
 
@@ -27,7 +29,7 @@ public class CompilationAdminController {
     }
 
     @PatchMapping(path = "/{compId}")
-    public CompilationDto updateCompilation(@PathVariable Long compId, @RequestBody UpdateCompilationRequest request){
+    public CompilationDto updateCompilation(@PathVariable Long compId,@Valid @RequestBody UpdateCompilationRequest request){
         return service.updateCompilation(compId,request);
     }
 }
