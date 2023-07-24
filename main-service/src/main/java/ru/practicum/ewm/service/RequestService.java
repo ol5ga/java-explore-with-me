@@ -18,6 +18,7 @@ import ru.practicum.ewm.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Data
@@ -30,6 +31,14 @@ public class RequestService {
     EventRepository eventRepository;
 
     ModelMapper mapper;
+
+    public List<ParticipationRequestDto> getUsersRequests(long userId) {
+        User user = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
+        List<ParticipationRequest> requests = repository.findAllByRequester_Id(userId);
+        return requests.stream()
+                .map(request -> RequestMapper.toParticipationRequestDto(request))
+                .collect(Collectors.toList());
+    }
     public ParticipationRequestDto addRequest(long userId, long eventId) {
         LocalDateTime now = LocalDateTime.now();
         User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
@@ -46,21 +55,29 @@ public class RequestService {
         String state;
         if(event.getParticipantLimit() == 0){
             state = "CONFIRMED";
-        }else if(repository.findAllByEventAndStateOrderByCreated(event,"CONFIRMED").size() == event.getParticipantLimit()){
+        }else if(repository.findAllByEventAndStatusOrderByCreated(event,"CONFIRMED").size() == event.getParticipantLimit()){
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
         } else{
             state = "PENDING";
         }
         //TODO why null??
-        event.setRequestModeration(true);
+        //        event.setRequestModeration(true);
         ParticipationRequest request = ParticipationRequest.builder()
                 .requester(requester)
                 .created(now)
                 .event(event)
-                .state(state)
+                .status(state)
                 .build();
-
+        ParticipationRequestDto result = RequestMapper.toParticipationRequestDto(repository.save(request));
         return RequestMapper.toParticipationRequestDto(repository.save(request));
+    }
+
+
+    public ParticipationRequestDto canceledRequest(long userId, long requestId) {
+        User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
+        ParticipationRequest request = repository.findById(requestId).orElseThrow(()-> new StorageException("Запрос не найден или недоступен"));
+        repository.delete(request);
+        return RequestMapper.toParticipationRequestDto(request);
     }
 }

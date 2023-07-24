@@ -21,5 +21,5 @@ public class ParticipationRequestDto {
     private LocalDateTime created;
     private long event;
     private long requester;
-    private String state;
+    private String status;
 }

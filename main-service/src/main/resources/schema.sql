@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS events(
     paid boolean,
     participant_limit BIGINT,
     published_on TIMESTAMP WITHOUT TIME ZONE,
-    request_moderation BOOLEAN,
+    request_moderation boolean,
     state VARCHAR(9),
     title VARCHAR(120) NOT NULL,
     views BIGINT,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS requests(
     requester_id BIGINT NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     event_id BIGINT NOT NULL,
-    state VARCHAR(9),
+    status VARCHAR(9),
     CONSTRAINT pk_request PRIMARY KEY (id),
     CONSTRAINT requester_id_to_user
     FOREIGN KEY (requester_id) REFERENCES users (id),

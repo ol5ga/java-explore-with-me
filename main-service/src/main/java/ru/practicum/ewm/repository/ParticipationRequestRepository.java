@@ -8,9 +8,10 @@ import java.util.List;
 
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest,Long> {
 
-    List<ParticipationRequest> findAllByEventAndStateOrderByCreated(Event event, String state);
+    List<ParticipationRequest> findAllByEventAndStatusOrderByCreated(Event event, String state);
 
     List<ParticipationRequest> findAllByEvent(Event event);
 
+    List<ParticipationRequest> findAllByRequester_Id(long userId);
     ParticipationRequest findFirstByEvent_IdAndRequester_Id(long eventId, long userId);
 }

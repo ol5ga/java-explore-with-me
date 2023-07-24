@@ -51,7 +51,7 @@ public class EventService {
         List<Event> events = repository.findAllByInitiatorOrderById(initiator, PageRequest.of(from/size, size));
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
-                        requestRepository.findAllByEventAndStateOrderByCreated(event,"APPROVED").size(),
+                        requestRepository.findAllByEventAndStatusOrderByCreated(event,"APPROVED").size(),
                         mapper.map(event.getCategory(), CategoryDto.class),
                         mapper.map(event.getInitiator(),UserShortDto.class)))
                 .collect(Collectors.toList());
@@ -70,7 +70,6 @@ public class EventService {
         Location location = locationRepository.save(mapper.map(request.getLocation(),Location.class));
 
         Event event = repository.save(EventMapper.toEvent(request, category, now, user, location));
-
         return collectToEventFullDto(event);
     }
 
@@ -86,9 +85,7 @@ public class EventService {
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-        if(event.getState().equals("PENDING") || event.getState().equals("CANCELED")){
-            throw new ConflictException("Событие не удовлетворяет правилам редактирования");
-        }
+
         if (event.getInitiator().getId() != userId ){
             throw new ValidationException("Запрос составлен некорректно");
         }
@@ -103,7 +100,7 @@ public class EventService {
         }
         if(request.getEventDate() != null){
             if(request.getEventDate().isBefore(now.plusHours(2))){
-                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+                throw new ValidationException("Событие не удовлетворяет правилам редактирования");
             }
             event.setEventDate(request.getEventDate());
         }
@@ -117,10 +114,13 @@ public class EventService {
         if(request.getParticipantLimit() != null){
             event.setParticipantLimit(request.getParticipantLimit());
         }
-        if(request.getRequestModeration() != event.getRequestModeration()){
+        if(request.getRequestModeration() != null){
             event.setRequestModeration(request.getRequestModeration());
         }
         if(request.getStateAction() != null){
+            if(event.getState().equals("PENDING") || event.getState().equals("CANCELED")){
+                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+            }
             if(request.getStateAction().equals("SEND_TO_REVIEW")) {
                 event.setState("PENDING");
             } else if(request.getStateAction().equals("CANCEL_REVIEW")){
@@ -157,30 +157,30 @@ public class EventService {
         if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
             throw new ValidationException("Запрос составлен некорректно");
         }
-        int pendingRequest = requestRepository.findAllByEventAndStateOrderByCreated(event,"PENDING").size();
+        int pendingRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event,"PENDING").size();
         if(event.getParticipantLimit() == pendingRequest){
             throw new ConflictException("Достигнут лимит одобренных заявок");
         }
         List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
         if(request.getStatus().equals("CONFIRMED")) {
             for (ParticipationRequest pR : requests) {
-                if (!pR.getState().equals("PENDING")) {
+                if (!pR.getStatus().equals("PENDING")) {
                     throw new ConflictException("Заявка должна быть в состоянии ожидания");
                 }
                 if (event.getParticipantLimit() != pendingRequest) {
                     pendingRequest++;
-                    pR.setState("CONFIRMED");
+                    pR.setStatus("CONFIRMED");
                 } else{
-                    pR.setState("REJECTED");
+                    pR.setStatus("REJECTED");
                 }
             }
         } else {
             for (ParticipationRequest pR : requests) {
-                pR.setState("REJECTED");
+                pR.setStatus("REJECTED");
             }
         }
-        List<ParticipationRequest> confirmed = requestRepository.findAllByEventAndStateOrderByCreated(event,"CONFIRMED");
-        List<ParticipationRequest> rejected = requestRepository.findAllByEventAndStateOrderByCreated(event,"REJECTED");
+        List<ParticipationRequest> confirmed = requestRepository.findAllByEventAndStatusOrderByCreated(event,"CONFIRMED");
+        List<ParticipationRequest> rejected = requestRepository.findAllByEventAndStatusOrderByCreated(event,"REJECTED");
         List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
         List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
         return EventRequestStatusUpdateResult.builder()
@@ -200,13 +200,6 @@ public class EventService {
     public EventFullDto adminUpdateEvent(long eventId, UpdateEventAdminRequest request) {
         Event event = repository.findById(eventId).orElseThrow(()->new StorageException("Событие не найдено или недоступно"));
         LocalDateTime now = LocalDateTime.now();
-        if(request.getStateAction().equals("PUBLISH_EVENT") && !event.getState().equals("PENDING")){
-            throw new ConflictException("Событие не удовлетворяет правилам редактирования");
-        }
-        if(request.getStateAction().equals("REJECT_EVENT") && event.getState().equals("PUBLISHED")){
-            throw new ConflictException("Событие не удовлетворяет правилам редактирования");
-        }
-
         if(request.getAnnotation() !=null){
             event.setAnnotation(request.getAnnotation());
         }
@@ -218,7 +211,7 @@ public class EventService {
         }
         if(request.getEventDate() != null){
             if(request.getEventDate().isBefore(now.plusHours(1))){
-                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+                throw new ValidationException("Событие не удовлетворяет правилам редактирования");
             }
             event.setEventDate(request.getEventDate());
         }
@@ -232,10 +225,16 @@ public class EventService {
         if(request.getParticipantLimit() != null){
             event.setParticipantLimit(request.getParticipantLimit());
         }
-        if(request.getRequestModeration() != event.getRequestModeration()){
+        if(request.getRequestModeration() != null){
             event.setRequestModeration(request.getRequestModeration());
         }
         if(request.getStateAction() != null){
+            if(request.getStateAction().equals("PUBLISH_EVENT") && (event.getState().equals("PUBLISHED")||(event.getState().equals("CANCELED")))){
+                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+            }
+            if(request.getStateAction().equals("REJECT_EVENT") && event.getState().equals("PUBLISHED")){
+                throw new ConflictException("Событие не удовлетворяет правилам редактирования");
+            }
             if(request.getStateAction().equals("PUBLISH_EVENT")) {
                 event.setPublishedOn(now);
                 event.setState("PUBLISHED");
@@ -260,7 +259,7 @@ public class EventService {
     }
 
     private EventFullDto collectToEventFullDto(Event event){
-        Integer confirmedRequests = requestRepository.findAllByEventAndStateOrderByCreated(event,"APPROVED").size();
+        Integer confirmedRequests = requestRepository.findAllByEventAndStatusOrderByCreated(event,"APPROVED").size();
         CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
         UserShortDto userDto = mapper.map(event.getInitiator(),UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);

@@ -7,12 +7,14 @@ import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.UpdateEventAdminRequest;
 import ru.practicum.ewm.service.EventService;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/admin/events")
 @AllArgsConstructor
+
 public class EventAdminController {
     private EventService service;
 
@@ -29,7 +31,7 @@ public class EventAdminController {
     }
 
     @PatchMapping(path = "/{eventId}")
-    public EventFullDto adminUpdateEvent(@PathVariable long eventId, @RequestBody UpdateEventAdminRequest request){
+    public EventFullDto adminUpdateEvent(@PathVariable long eventId,@Valid @RequestBody UpdateEventAdminRequest request){
         return service.adminUpdateEvent(eventId,request);
     }
 }

@@ -29,5 +29,5 @@ public class ParticipationRequest {
     @ManyToOne
     private Event event;
     @Column
-    private String state;
+    private String status;
 }
