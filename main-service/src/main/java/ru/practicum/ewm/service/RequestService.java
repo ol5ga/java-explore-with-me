@@ -77,6 +77,7 @@ public class RequestService {
     public ParticipationRequestDto canceledRequest(long userId, long requestId) {
         User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
         ParticipationRequest request = repository.findById(requestId).orElseThrow(()-> new StorageException("Запрос не найден или недоступен"));
+        request.setStatus("CANCELED");
         repository.delete(request);
         return RequestMapper.toParticipationRequestDto(request);
     }

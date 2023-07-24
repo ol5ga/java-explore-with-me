@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/users")
 @AllArgsConstructor
-@Validated
+//@Validated
 public class EventPrivateController {
 
     private EventService service;
@@ -57,7 +57,7 @@ public class EventPrivateController {
 
     @PatchMapping(path = "/{userId}/events/{eventId}/requests")
     public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable long userId, @PathVariable long eventId,
-                                                              @RequestBody EventRequestStatusUpdateRequest requests){
+                                                              @RequestBody(required = false) EventRequestStatusUpdateRequest requests){
         return service.updateRequestStatus(userId, eventId,requests);
     }
 }

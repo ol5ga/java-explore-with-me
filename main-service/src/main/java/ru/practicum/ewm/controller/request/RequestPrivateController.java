@@ -28,8 +28,8 @@ public class RequestPrivateController {
         return service.addRequest(userId, eventId);
     }
 
-    @PatchMapping(path = "{userId}/requests/{requestId}/cancel")
-    public ParticipationRequestDto canceledRequest(@PathVariable long userId, @RequestParam long requestId){
+    @PatchMapping(path = "/{userId}/requests/{requestId}/cancel")
+    public ParticipationRequestDto canceledRequest(@PathVariable long userId, @PathVariable long requestId){
         return service.canceledRequest(userId,requestId);
     }
 }

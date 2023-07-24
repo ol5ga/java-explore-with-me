@@ -153,12 +153,13 @@ public class EventService {
     }
 
     public EventRequestStatusUpdateResult updateRequestStatus(long userId, long eventId, EventRequestStatusUpdateRequest request) {
+        if(request == null){
+            throw new ConflictException("Не передан список заявок");
+        }
         Event event = repository.findById(eventId).orElseThrow(()->new StorageException("Событие не найдено или недоступно"));
         if(userId != event.getInitiator().getId()){
             throw new ValidationException("Запрос составлен некорректно");
         }
-        //TODO why null??
-//        event.setRequestModeration(true);
         if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
             throw new ValidationException("Запрос составлен некорректно");
         }
@@ -167,6 +168,10 @@ public class EventService {
             throw new ConflictException("Достигнут лимит одобренных заявок");
         }
         List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
+        List<ParticipationRequest> confirmed = new ArrayList<>();
+                //requestRepository.findAllByEventAndStatusOrderByCreated(event,"CONFIRMED");
+        List<ParticipationRequest> rejected = new ArrayList<>();
+                //requestRepository.findAllByEventAndStatusOrderByCreated(event,"REJECTED");
         if(request.getStatus().equals("CONFIRMED")) {
             for (ParticipationRequest pR : requests) {
                 if (!pR.getStatus().equals("PENDING")) {
@@ -175,17 +180,18 @@ public class EventService {
                 if (event.getParticipantLimit() != pendingRequest) {
                     pendingRequest++;
                     pR.setStatus("CONFIRMED");
+                    confirmed.add(pR);
                 } else{
                     pR.setStatus("REJECTED");
+                    rejected.add(pR);
                 }
             }
         } else {
             for (ParticipationRequest pR : requests) {
                 pR.setStatus("REJECTED");
+                rejected.add(pR);
             }
         }
-        List<ParticipationRequest> confirmed = requestRepository.findAllByEventAndStatusOrderByCreated(event,"CONFIRMED");
-        List<ParticipationRequest> rejected = requestRepository.findAllByEventAndStatusOrderByCreated(event,"REJECTED");
         List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
         List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
         return EventRequestStatusUpdateResult.builder()
