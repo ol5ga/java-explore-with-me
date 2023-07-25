@@ -61,8 +61,6 @@ public class RequestService {
         } else{
             state = "PENDING";
         }
-        //TODO why null??
-        //        event.setRequestModeration(true);
         ParticipationRequest request = ParticipationRequest.builder()
                 .requester(requester)
                 .created(now)
