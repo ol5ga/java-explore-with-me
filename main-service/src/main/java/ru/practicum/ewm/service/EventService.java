@@ -221,15 +221,25 @@ public class EventService {
                     .collect(Collectors.toList());
             conditions.add(event.category.in(categories));
         }
+        if(rangeStart != null){
+            conditions.add(event.eventDate.goe(rangeStart));
+        }
+        if(rangeEnd != null){
+            conditions.add(event.eventDate.loe(rangeEnd));
+        }
+        List<Event> result = new ArrayList<>();
+        if(conditions.isEmpty()) {
+            result = repository.findAll(PageRequest.of(from / size, size)).getContent();
+        }else{
         BooleanExpression request = conditions.get(0);
         for (int i=1; i <conditions.size(); i++) {
             request = request.and(conditions.get(i));
         }
-        Iterable<Event> events = repository.findAll(request);
-        List<Event> result = new ArrayList<>();
+        Iterable<Event> events = repository.findAll(request,PageRequest.of(from/size, size));
         events.forEach(result::add);
+        }
         return result.stream()
-                .map(e -> collectToEventFullDto(e))
+                .map(this::collectToEventFullDto)
                 .collect(Collectors.toList());
     }
 

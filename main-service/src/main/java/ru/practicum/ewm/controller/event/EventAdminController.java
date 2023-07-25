@@ -27,7 +27,6 @@ public class EventAdminController {
                                     @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                     @RequestParam(defaultValue = "0") int from,
                                     @RequestParam(defaultValue = "10") int size){
-        // TODO
         return service.searchEvents(users,states,categories,rangeStart,rangeEnd,from,size);
     }
 
