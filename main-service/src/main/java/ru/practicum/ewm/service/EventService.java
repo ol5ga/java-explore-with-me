@@ -1,5 +1,6 @@
 package ru.practicum.ewm.service;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.model.event.Event;
+import ru.practicum.ewm.model.event.QEvent;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.request.ParticipationRequest;
@@ -32,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @Data
@@ -169,9 +172,7 @@ public class EventService {
         }
         List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
         List<ParticipationRequest> confirmed = new ArrayList<>();
-                //requestRepository.findAllByEventAndStatusOrderByCreated(event,"CONFIRMED");
         List<ParticipationRequest> rejected = new ArrayList<>();
-                //requestRepository.findAllByEventAndStatusOrderByCreated(event,"REJECTED");
         if(request.getStatus().equals("CONFIRMED")) {
             for (ParticipationRequest pR : requests) {
                 if (!pR.getStatus().equals("PENDING")) {
@@ -192,8 +193,8 @@ public class EventService {
                 rejected.add(pR);
             }
         }
-        List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
-        List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(ex -> RequestMapper.toParticipationRequestDto(ex)).collect(Collectors.toList());
+        List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
+        List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
         return EventRequestStatusUpdateResult.builder()
             .confirmedRequests(confirmedRequests)
             .rejectedRequests(rejectedRequests)
@@ -202,10 +203,34 @@ public class EventService {
 
 
 
-    public List<EventFullDto> searchEvents(List<Long> users, List<String> states, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
-        //TODO
-
-        return new ArrayList<>();
+    public List<EventFullDto> searchEvents(List<Long> usersId, List<String> states, List<Long> categoriesId, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        QEvent event = QEvent.event;
+        List<BooleanExpression> conditions = new ArrayList<>();
+        if(usersId != null){
+            List<User> users = usersId.stream()
+                    .map(user ->userRepository.findById(user).orElseThrow())
+                    .collect(Collectors.toList());
+            conditions.add(event.initiator.in(users));
+        }
+        if(states != null){
+            conditions.add(event.state.in(states));
+        }
+        if(categoriesId != null) {
+            List<Category> categories = categoriesId.stream()
+                    .map(cat -> categoryRepository.findById(cat).orElseThrow())
+                    .collect(Collectors.toList());
+            conditions.add(event.category.in(categories));
+        }
+        BooleanExpression request = conditions.get(0);
+        for (int i=1; i <conditions.size(); i++) {
+            request = request.and(conditions.get(i));
+        }
+        Iterable<Event> events = repository.findAll(request);
+        List<Event> result = new ArrayList<>();
+        events.forEach(result::add);
+        return result.stream()
+                .map(e -> collectToEventFullDto(e))
+                .collect(Collectors.toList());
     }
 
     public EventFullDto adminUpdateEvent(long eventId, UpdateEventAdminRequest request) {
