@@ -14,14 +14,13 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/compilations")
 @AllArgsConstructor
-@Validated
 public class ComplicationPublicController {
     private CompilationService service;
 
     @GetMapping
-    public List<CompilationDto> getCompilations(@RequestParam @NotNull boolean pinned,
-                                                @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                                @RequestParam(defaultValue = "10") @Positive int size){
+    public List<CompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned,
+                                                @RequestParam(defaultValue = "0") int from,
+                                                @RequestParam(defaultValue = "10") int size){
 
         return service.getCompilations(pinned,from,size);
     }

@@ -78,11 +78,16 @@ public class CompilationService {
         return collectToCompilationDto(newCompilation);
     }
 
-    public List<CompilationDto> getCompilations(boolean pinned, int from, int size) {
+    public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
         if (from < 0 || size < 0) {
             throw new IllegalArgumentException("Запрос составлен некорректно");
         }
-        List<Compilation> compilations = repository.findAllByPinned(pinned,PageRequest.of(from/size, size));
+        List<Compilation> compilations = new ArrayList<>();
+        if(pinned != null) {
+            compilations = repository.findAllByPinned(pinned, PageRequest.of(from / size, size));
+        } else{
+            compilations = repository.findAll(PageRequest.of(from / size, size)).getContent();
+        }
         return compilations.stream()
                 .map(this::collectToCompilationDto)
                 .collect(Collectors.toList());
