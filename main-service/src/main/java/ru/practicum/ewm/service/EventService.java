@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
@@ -314,6 +315,9 @@ public class EventService {
 
     public List<EventShortDto> getEvents(String text, List<Long> categoriesId, Boolean paid, LocalDateTime rangeStart,
                                          LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
+// TODO stat0if (rangeStart.isAfter(rangeEnd)) {
+//            throw new BadRequestException("Дата начала сортировки должна быть ранне конца сортировки");
+//        }
         QEvent event = QEvent.event;
         List<BooleanExpression> conditions = new ArrayList<>();
         if(text != null){
@@ -327,32 +331,33 @@ public class EventService {
             conditions.add(event.category.in(categories));
         }
         if(paid != null){
-            conditions.add(event.paid.coalesce(paid));
+            conditions.add(event.paid.eq(paid));
         }
         if(rangeStart != null){
             conditions.add(event.eventDate.goe(rangeStart));
+        } else {
+            conditions.add(event.eventDate.goe(LocalDateTime.now()));
         }
         if(rangeEnd != null){
             conditions.add(event.eventDate.loe(rangeEnd));
         }
 //        TODO
 //        if(onlyAvailable != null){
-//            conditions.add(event.)
+//            conditions.add(event.participantLimit)
 //        }
 //        if(sort != null){
 //
 //        }
         List<Event> result = new ArrayList<>();
         BooleanExpression request = event.state.like("PUBLISHED");
-        if(conditions.isEmpty()) {
-            result = repository.findAll(request, PageRequest.of(from / size, size)).getContent();
-        }else {
-            for (BooleanExpression condition : conditions) {
-                request = request.and(condition);
+            if(!conditions.isEmpty()) {
+                for (BooleanExpression condition : conditions) {
+                    request = request.and(condition);
+                }
             }
             Iterable<Event> events = repository.findAll(request, PageRequest.of(from / size, size));
+            // sort.toSort(Sort.Direction.DESC)
             events.forEach(result::add);
-        }
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
                         requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size(),
