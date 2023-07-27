@@ -50,12 +50,11 @@ public class EventService {
     private ParticipationRequestRepository requestRepository;
     private ModelMapper mapper;
 
-    public List<EventShortDto> addUserEvents(long userId, int from, int size) {
+    public List<EventShortDto> getUserEvents(long userId, int from, int size) {
         User initiator = userRepository.findById(userId).orElseThrow();
         List<Event> events = repository.findAllByInitiatorOrderById(initiator, PageRequest.of(from/size, size));
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(event,"APPROVED").size(),
                         mapper.map(event.getCategory(), CategoryDto.class),
                         mapper.map(event.getInitiator(),UserShortDto.class)))
                 .collect(Collectors.toList());
@@ -167,8 +166,7 @@ public class EventService {
         if(!event.getRequestModeration() || event.getParticipantLimit() == 0){
             throw new ValidationException("Запрос составлен некорректно");
         }
-        int pendingRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event,"PENDING").size();
-        if(event.getParticipantLimit() == pendingRequest){
+        if(event.getParticipantLimit().equals(event.getConfirmedRequests())){
             throw new ConflictException("Достигнут лимит одобренных заявок");
         }
         List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
@@ -179,8 +177,9 @@ public class EventService {
                 if (!pR.getStatus().equals("PENDING")) {
                     throw new ConflictException("Заявка должна быть в состоянии ожидания");
                 }
-                if (event.getParticipantLimit() != pendingRequest) {
-                    pendingRequest++;
+                if (event.getParticipantLimit() > event.getConfirmedRequests()) {
+                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                    repository.save(event);
                     pR.setStatus("CONFIRMED");
                     confirmed.add(pR);
                 } else{
@@ -272,8 +271,17 @@ public class EventService {
         if(request.getParticipantLimit() != null){
             event.setParticipantLimit(request.getParticipantLimit());
         }
-        if(request.getRequestModeration() != null){
+        if(request.getRequestModeration() != null) {
             event.setRequestModeration(request.getRequestModeration());
+            if (!request.getRequestModeration() && event.getConfirmedRequests() < event.getParticipantLimit()) {
+                List<ParticipationRequest> requests = requestRepository.findAllByEventAndStatusOrderByCreated(event, "PENDING");
+                for (ParticipationRequest participationRequest : requests) {
+                    if (event.getConfirmedRequests() < event.getParticipantLimit()) {
+                        participationRequest.setStatus("CONFIRMED");
+                        event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                    }
+                }
+            }
         }
         if(request.getStateAction() != null){
             if(request.getStateAction().equals("PUBLISH_EVENT") && (event.getState().equals("PUBLISHED")||(event.getState().equals("REJECTED")))){
@@ -306,11 +314,10 @@ public class EventService {
     }
 
     private EventFullDto collectToEventFullDto(Event event){
-        Integer confirmedRequests = requestRepository.findAllByEventAndStatusOrderByCreated(event,"APPROVED").size();
         CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
         UserShortDto userDto = mapper.map(event.getInitiator(),UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
-        return EventMapper.toEventFullDto(event,confirmedRequests,categoryDto,userDto,locationDto);
+        return EventMapper.toEventFullDto(event,categoryDto,userDto,locationDto);
     }
 
     public List<EventShortDto> getEvents(String text, List<Long> categoriesId, Boolean paid, LocalDateTime rangeStart,
@@ -360,7 +367,6 @@ public class EventService {
             events.forEach(result::add);
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size(),
                         mapper.map(e.getCategory(), CategoryDto.class),
                         mapper.map(e.getInitiator(),UserShortDto.class)))
                 .collect(Collectors.toList());

@@ -19,7 +19,7 @@ public class EventMapper {
         return Event.builder()
                 .annotation(request.getAnnotation())
                 .category(category)
-//                .requests(new ArrayList<>())
+                .confirmedRequests(0)
                 .createdOn(now)
                 .description(request.getDescription())
                 .eventDate(request.getEventDate())
@@ -34,11 +34,11 @@ public class EventMapper {
                 .views(0)
                 .build();
     }
-    public static EventFullDto toEventFullDto(Event event, Integer confirmedRequests,CategoryDto categoryDto,UserShortDto userDto,LocationDto locationDto){
+    public static EventFullDto toEventFullDto(Event event,CategoryDto categoryDto,UserShortDto userDto,LocationDto locationDto){
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
-                .confirmedRequests(confirmedRequests)
+                .confirmedRequests(event.getConfirmedRequests())
                 .createdOn(event.getCreatedOn())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
@@ -55,11 +55,11 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event, Integer confirmedRequests,CategoryDto categoryDto,UserShortDto userDto){
+    public static EventShortDto toEventShortDto(Event event,CategoryDto categoryDto,UserShortDto userDto){
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
-                .confirmedRequests(confirmedRequests)
+                .confirmedRequests(event.getConfirmedRequests())
                 .eventDate(event.getEventDate())
                 .id(event.getId())
                 .initiator(userDto)

@@ -52,12 +52,15 @@ public class RequestService {
             log.info("Событие не опубликовано");
             throw new ConflictException("Нарушение целостности данных");
         }
-        String state;
-        if(event.getParticipantLimit() == 0){
-            state = "CONFIRMED";
-        }else if(repository.findAllByEvent(event).size() == event.getParticipantLimit()){
+        if(event.getParticipantLimit() > 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
+        }
+        String state;
+        if(!event.getRequestModeration() || event.getParticipantLimit().equals(0)){
+            state = "CONFIRMED";
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            eventRepository.save(event);
         } else{
             state = "PENDING";
         }
@@ -67,7 +70,6 @@ public class RequestService {
                 .event(event)
                 .status(state)
                 .build();
-        ParticipationRequestDto result = RequestMapper.toParticipationRequestDto(repository.save(request));
         return RequestMapper.toParticipationRequestDto(repository.save(request));
     }
 
@@ -75,7 +77,13 @@ public class RequestService {
     public ParticipationRequestDto canceledRequest(long userId, long requestId) {
         User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
         ParticipationRequest request = repository.findById(requestId).orElseThrow(()-> new StorageException("Запрос не найден или недоступен"));
+
         request.setStatus("CANCELED");
+        Event event = eventRepository.findById(request.getEvent().getId()).orElseThrow();
+        if(request.getStatus().equals("CONFIRMED")){
+            event.setConfirmedRequests(event.getConfirmedRequests() - 1);
+            eventRepository.save(event);
+        }
         repository.delete(request);
         return RequestMapper.toParticipationRequestDto(request);
     }

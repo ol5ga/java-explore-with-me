@@ -28,9 +28,8 @@ public class Event {
     @JoinColumn(name = "category_id")
     @ManyToOne
     private Category category;
-//    @JoinColumn(name ="requests_id")
-//    @OneToMany
-//    private List<ParticipationRequest> requests;
+   @Column(name ="confirmed_requests")
+    private Integer confirmedRequests;
     @Column(name ="created_on")
     private LocalDateTime createdOn;
     @Column

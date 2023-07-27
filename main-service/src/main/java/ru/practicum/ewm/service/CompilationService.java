@@ -96,10 +96,9 @@ public class CompilationService {
     private CompilationDto collectToCompilationDto(Compilation compilation){
         List<EventShortDto> shortEvents = new ArrayList<>();
         for(Event event: compilation.getEvents()){
-            Integer confirmedRequests = requestRepository.findAllByEvent(event).size();
             CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
             UserShortDto userDto =  mapper.map(event.getInitiator(),UserShortDto.class);
-            EventShortDto shortEvent = EventMapper.toEventShortDto(event,confirmedRequests,categoryDto,userDto);
+            EventShortDto shortEvent = EventMapper.toEventShortDto(event,categoryDto,userDto);
             shortEvents.add(shortEvent);
         }
         return CompilationMapper.toCompilationDto(compilation, shortEvents);
