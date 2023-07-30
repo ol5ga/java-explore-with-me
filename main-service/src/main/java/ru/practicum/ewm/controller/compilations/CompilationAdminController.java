@@ -18,18 +18,18 @@ public class CompilationAdminController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public CompilationDto addCompilation(@Valid @RequestBody NewCompilationDto request){
+    public CompilationDto addCompilation(@Valid @RequestBody NewCompilationDto request) {
         return service.addCompilation(request);
     }
 
     @DeleteMapping(path = "/{compId}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void deleteCompilation(@PathVariable Long compId){
+    public void deleteCompilation(@PathVariable Long compId) {
         service.deleteCompilation(compId);
     }
 
     @PatchMapping(path = "/{compId}")
-    public CompilationDto updateCompilation(@PathVariable Long compId,@Valid @RequestBody UpdateCompilationRequest request){
-        return service.updateCompilation(compId,request);
+    public CompilationDto updateCompilation(@PathVariable Long compId, @Valid @RequestBody UpdateCompilationRequest request) {
+        return service.updateCompilation(compId, request);
     }
 }

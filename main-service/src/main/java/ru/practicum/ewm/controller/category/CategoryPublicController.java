@@ -14,14 +14,15 @@ import java.util.List;
 public class CategoryPublicController {
 
     private CategoryService service;
+
     @GetMapping
     public List<Category> getAllCategories(@Valid @RequestParam(defaultValue = "0") Integer from,
-                                           @Valid @RequestParam(defaultValue = "10") Integer size){
-        return service.getAllCategories(from,size);
+                                           @Valid @RequestParam(defaultValue = "10") Integer size) {
+        return service.getAllCategories(from, size);
     }
 
     @GetMapping("/{id}")
-    public Category getCategory(@PathVariable long id){
+    public Category getCategory(@PathVariable long id) {
         return service.getCategory(id);
     }
 }

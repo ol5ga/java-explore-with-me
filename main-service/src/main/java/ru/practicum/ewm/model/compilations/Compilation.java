@@ -4,12 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.model.event.Event;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

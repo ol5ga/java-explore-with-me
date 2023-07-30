@@ -5,7 +5,6 @@ import lombok.Data;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
@@ -35,20 +34,21 @@ public class CompilationService {
     private EventRepository eventRepository;
     private ParticipationRequestRepository requestRepository;
     private ModelMapper mapper;
+
     public CompilationDto addCompilation(NewCompilationDto request) {
         List<Event> events;
-        if(request.getPinned() == null){
+        if (request.getPinned() == null) {
             request.setPinned(false);
         }
-        if(request.getEvents()==null || request.getEvents().isEmpty()){
-            events= new ArrayList<>();
-        } else{
+        if (request.getEvents() == null || request.getEvents().isEmpty()) {
+            events = new ArrayList<>();
+        } else {
             events = request.getEvents().stream()
                     .map(event -> eventRepository.findById(event).orElseThrow())
                     .collect(Collectors.toList());
         }
-        Compilation compilation = CompilationMapper.toCompilation(request,events);
-        try{
+        Compilation compilation = CompilationMapper.toCompilation(request, events);
+        try {
             repository.save(compilation);
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Нарушение целостности данных");
@@ -57,19 +57,19 @@ public class CompilationService {
     }
 
     public void deleteCompilation(Long compId) {
-        Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
+        Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
         repository.delete(compilation);
     }
 
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
-        Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
-        if(request.getPinned()!= null){
+        Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
+        if (request.getPinned() != null) {
             compilation.setPinned(request.getPinned());
         }
-        if(request.getTitle() != null){
+        if (request.getTitle() != null) {
             compilation.setTitle(request.getTitle());
         }
-        if(request.getEvents() != null){
+        if (request.getEvents() != null) {
             compilation.setEvents(request.getEvents().stream()
                     .map(event -> eventRepository.findById(event).orElseThrow())
                     .collect(Collectors.toList()));
@@ -83,9 +83,9 @@ public class CompilationService {
             throw new IllegalArgumentException("Запрос составлен некорректно");
         }
         List<Compilation> compilations = new ArrayList<>();
-        if(pinned != null) {
+        if (pinned != null) {
             compilations = repository.findAllByPinned(pinned, PageRequest.of(from / size, size));
-        } else{
+        } else {
             compilations = repository.findAll(PageRequest.of(from / size, size)).getContent();
         }
         return compilations.stream()
@@ -93,19 +93,19 @@ public class CompilationService {
                 .collect(Collectors.toList());
     }
 
-    private CompilationDto collectToCompilationDto(Compilation compilation){
+    private CompilationDto collectToCompilationDto(Compilation compilation) {
         List<EventShortDto> shortEvents = new ArrayList<>();
-        for(Event event: compilation.getEvents()){
+        for (Event event : compilation.getEvents()) {
             CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
-            UserShortDto userDto =  mapper.map(event.getInitiator(),UserShortDto.class);
-            EventShortDto shortEvent = EventMapper.toEventShortDto(event,categoryDto,userDto);
+            UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
+            EventShortDto shortEvent = EventMapper.toEventShortDto(event, categoryDto, userDto);
             shortEvents.add(shortEvent);
         }
         return CompilationMapper.toCompilationDto(compilation, shortEvents);
     }
 
     public CompilationDto getCompilation(Long compId) {
-        Compilation compilation = repository.findById(compId).orElseThrow(()-> new StorageException("Подборка не найдена или недоступна"));
+        Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
         return collectToCompilationDto(compilation);
     }
 }

@@ -26,7 +26,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflictException(final ConflictException e){
+    public ErrorResponse handleConflictException(final ConflictException e) {
         log.info("Ошибка 409");
         return new ErrorResponse(e.getMessage());
     }

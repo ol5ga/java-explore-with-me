@@ -1,21 +1,18 @@
 package ru.practicum.ewm.dto.event;
 
-import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
+import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
+import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.location.Location;
-import ru.practicum.ewm.model.request.ParticipationRequest;
-import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.user.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class EventMapper {
-    public static Event toEvent(NewEventDto request, Category category, LocalDateTime now, User user, Location location){
+    public static Event toEvent(NewEventDto request, Category category, LocalDateTime now, User user, Location location) {
         return Event.builder()
                 .annotation(request.getAnnotation())
                 .category(category)
@@ -34,7 +31,8 @@ public class EventMapper {
                 .views(0)
                 .build();
     }
-    public static EventFullDto toEventFullDto(Event event,CategoryDto categoryDto,UserShortDto userDto,LocationDto locationDto){
+
+    public static EventFullDto toEventFullDto(Event event, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto) {
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
@@ -55,7 +53,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event,CategoryDto categoryDto,UserShortDto userDto){
+    public static EventShortDto toEventShortDto(Event event, CategoryDto categoryDto, UserShortDto userDto) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)

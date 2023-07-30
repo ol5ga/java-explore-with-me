@@ -5,11 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
-import ru.practicum.ewm.dto.category.CategoryDto;
 
 import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor

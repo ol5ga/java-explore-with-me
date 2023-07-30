@@ -2,14 +2,11 @@ package ru.practicum.ewm.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.location.LocationDto;
 
 import javax.validation.constraints.Future;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 

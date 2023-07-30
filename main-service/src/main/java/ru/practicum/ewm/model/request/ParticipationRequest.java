@@ -20,12 +20,12 @@ public class ParticipationRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @JoinColumn(name ="requester_id")
+    @JoinColumn(name = "requester_id")
     @OneToOne
     private User requester;
     @Column
     private LocalDateTime created;
-    @JoinColumn(name ="event_id")
+    @JoinColumn(name = "event_id")
     @ManyToOne
     private Event event;
     @Column

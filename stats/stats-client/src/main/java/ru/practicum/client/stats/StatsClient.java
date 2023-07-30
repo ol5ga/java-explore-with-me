@@ -5,9 +5,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.practicum.dto.stats.EndpointHit;
 import ru.practicum.dto.stats.ViewStats;
@@ -25,14 +23,11 @@ public class StatsClient {
     public StatsClient(@Value("${stats-server.url}") String uri) {
         this.uri = uri;
         restTemplate = new RestTemplate();
-//        restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
     }
 
 
-
-
     public void saveStats(EndpointHit hit) {
-        restTemplate.postForObject(uri+ "/hit", hit, Object.class);
+        restTemplate.postForObject(uri + "/hit", hit, Object.class);
     }
 
     public List<ViewStats> getStats(LocalDateTime start,

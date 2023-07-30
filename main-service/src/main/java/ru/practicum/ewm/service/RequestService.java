@@ -33,18 +33,19 @@ public class RequestService {
     ModelMapper mapper;
 
     public List<ParticipationRequestDto> getUsersRequests(long userId) {
-        User user = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
         List<ParticipationRequest> requests = repository.findAllByRequester_Id(userId);
         return requests.stream()
                 .map(request -> RequestMapper.toParticipationRequestDto(request))
                 .collect(Collectors.toList());
     }
+
     public ParticipationRequestDto addRequest(long userId, long eventId) {
         LocalDateTime now = LocalDateTime.now();
-        User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
-        Event event = eventRepository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
-        if(userId == event.getInitiator().getId()||
-                repository.findFirstByEvent_IdAndRequester_Id(eventId,userId) != null){
+        User requester = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено или недоступно"));
+        if (userId == event.getInitiator().getId() ||
+                repository.findFirstByEvent_IdAndRequester_Id(eventId, userId) != null) {
             log.info("Для этого пользователя нельзя создать запрос");
             throw new ConflictException("Нарушение целостности данных");
         }
@@ -52,16 +53,16 @@ public class RequestService {
             log.info("Событие не опубликовано");
             throw new ConflictException("Нарушение целостности данных");
         }
-        if(event.getParticipantLimit() > 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
+        if (event.getParticipantLimit() > 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
         }
         String state;
-        if(!event.getRequestModeration() || event.getParticipantLimit().equals(0)){
+        if (!event.getRequestModeration() || event.getParticipantLimit().equals(0)) {
             state = "CONFIRMED";
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
-        } else{
+        } else {
             state = "PENDING";
         }
         ParticipationRequest request = ParticipationRequest.builder()
@@ -75,12 +76,12 @@ public class RequestService {
 
 
     public ParticipationRequestDto canceledRequest(long userId, long requestId) {
-        User requester = userRepository.findById(userId).orElseThrow(()-> new StorageException("Пользователь не найден"));
-        ParticipationRequest request = repository.findById(requestId).orElseThrow(()-> new StorageException("Запрос не найден или недоступен"));
+        User requester = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
+        ParticipationRequest request = repository.findById(requestId).orElseThrow(() -> new StorageException("Запрос не найден или недоступен"));
 
         request.setStatus("CANCELED");
         Event event = eventRepository.findById(request.getEvent().getId()).orElseThrow();
-        if(request.getStatus().equals("CONFIRMED")){
+        if (request.getStatus().equals("CONFIRMED")) {
             event.setConfirmedRequests(event.getConfirmedRequests() - 1);
             eventRepository.save(event);
         }

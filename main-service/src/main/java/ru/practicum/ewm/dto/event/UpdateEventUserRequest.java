@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
+import ru.practicum.ewm.dto.location.LocationDto;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.Size;

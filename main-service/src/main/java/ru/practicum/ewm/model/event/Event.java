@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.ewm.model.location.Location;
-import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.category.Category;
+import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
@@ -28,27 +26,27 @@ public class Event {
     @JoinColumn(name = "category_id")
     @ManyToOne
     private Category category;
-   @Column(name ="confirmed_requests")
+    @Column(name = "confirmed_requests")
     private Integer confirmedRequests;
-    @Column(name ="created_on")
+    @Column(name = "created_on")
     private LocalDateTime createdOn;
     @Column
     private String description;
-    @Column(name ="event_date")
+    @Column(name = "event_date")
     private LocalDateTime eventDate;
-    @JoinColumn(name ="initiator_id")
+    @JoinColumn(name = "initiator_id")
     @OneToOne
     private User initiator;
-    @JoinColumn(name ="location_id")
+    @JoinColumn(name = "location_id")
     @OneToOne
     private Location location;
     @Column
     private Boolean paid;
-    @Column(name ="participant_limit")
+    @Column(name = "participant_limit")
     private Integer participantLimit;
-    @Column(name ="published_on")
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
-    @Column(name ="request_moderation")
+    @Column(name = "request_moderation")
     private Boolean requestModeration;
     @Column
     private String state;

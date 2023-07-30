@@ -10,8 +10,8 @@ import ru.practicum.ewm.dto.category.NewCategoryDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.category.Category;
-import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.CategoryRepository;
+import ru.practicum.ewm.repository.EventRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,7 @@ public class CategoryService {
     private CategoryRepository repository;
     private EventRepository eventRepository;
     private ModelMapper mapper;
+
     public Category addCategory(NewCategoryDto name) {
         Category category;
         try {
@@ -38,7 +39,7 @@ public class CategoryService {
     public void deleteCategory(long id) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
 
-        if(eventRepository.findAllByCategory_Id(id).size() != 0) {
+        if (eventRepository.findAllByCategory_Id(id).size() != 0) {
             throw new ConflictException("Существуют события, связанные с категорией");
         }
         repository.delete(category);
@@ -46,14 +47,14 @@ public class CategoryService {
 
     public Category updateCategory(long id, NewCategoryDto name) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
-        if(eventRepository.findAllByCategory_Id(id).size() != 0) {
+        if (eventRepository.findAllByCategory_Id(id).size() != 0) {
             throw new ConflictException("Существуют события, связанные с категорией");
         }
-        if (name.getName() != null){
+        if (name.getName() != null) {
             category.setName(name.getName());
         }
         try {
-        repository.save(category);
+            repository.save(category);
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Нарушение целостности данных");
         }
@@ -65,14 +66,14 @@ public class CategoryService {
         if (from < 0 || size < 0) {
             throw new IllegalArgumentException("Запрос составлен некорректно");
         }
-        all = repository.findAll(PageRequest.of(from/size, size)).toList();
+        all = repository.findAll(PageRequest.of(from / size, size)).toList();
         return all;
     }
 
     public Category getCategory(long id) {
-        if (id<0){
+        if (id < 0) {
             throw new IllegalArgumentException("Запрос составлен некорректно");
         }
-        return repository.findById(id).orElseThrow(()-> new StorageException("Категория не найдена или недоступна"));
+        return repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
     }
 }

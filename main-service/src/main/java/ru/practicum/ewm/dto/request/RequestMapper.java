@@ -3,7 +3,7 @@ package ru.practicum.ewm.dto.request;
 import ru.practicum.ewm.model.request.ParticipationRequest;
 
 public class RequestMapper {
-    public static ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request){
+    public static ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {
         return ParticipationRequestDto.builder()
                 .id(request.getId())
                 .created(request.getCreated())
