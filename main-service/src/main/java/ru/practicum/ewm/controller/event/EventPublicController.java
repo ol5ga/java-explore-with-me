@@ -7,6 +7,7 @@ import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.service.EventService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +28,14 @@ public class EventPublicController {
                                          @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                          @RequestParam(required = false) String sort,
                                          @RequestParam(defaultValue = "0") int from,
-                                         @RequestParam(defaultValue = "10") int size){
-        return service.getEvents(text,categories,paid,rangeStart,rangeEnd,onlyAvailable,sort,from,size);
+                                         @RequestParam(defaultValue = "10") int size,
+                                         HttpServletRequest request){
+        return service.getEvents(text,categories,paid,rangeStart,rangeEnd,onlyAvailable,sort,from,size,request);
     }
 
     @GetMapping(path = "/{id}")
-    public EventFullDto getEvent(@PathVariable long id){
+    public EventFullDto getEvent(@PathVariable long id, HttpServletRequest request){
 
-        return service.getEvent(id);
+        return service.getEvent(id,request);
     }
 }

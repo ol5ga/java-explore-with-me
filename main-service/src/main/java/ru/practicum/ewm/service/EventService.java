@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.client.stats.StatsClient;
+import ru.practicum.dto.stats.EndpointHit;
+import ru.practicum.dto.stats.ViewStats;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.event.*;
@@ -33,8 +35,11 @@ import ru.practicum.ewm.repository.ParticipationRequestRepository;
 import ru.practicum.ewm.repository.CategoryRepository;
 import ru.practicum.ewm.repository.UserRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -306,12 +311,13 @@ public class EventService {
         repository.save(event);
         return collectToEventFullDto(repository.save(event));
     }
-    public EventFullDto getEvent(long eventId) {
+    public EventFullDto getEvent(long eventId, HttpServletRequest httpRequest) {
         Event event = repository.findById(eventId).orElseThrow(()-> new StorageException("Событие не найдено или недоступно"));
         if(event.getState().equals("PENDING") || event.getState().equals("CANCELED")){
             throw new StorageException("Запрос составлен некорректно");
         }
         event.setViews(event.getViews() + 1);
+        statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         //TODO добавить в статистику и взять из нее
         return collectToEventFullDto(event);
     }
@@ -324,8 +330,7 @@ public class EventService {
     }
 
     public List<EventShortDto> getEvents(String text, List<Long> categoriesId, Boolean paid, LocalDateTime rangeStart,
-                                         LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
-       // TODO stats
+                                         LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest httpRequest) {
         LocalDateTime now = LocalDateTime.now();
         if (rangeStart == null && rangeEnd == null) {
             rangeStart = now;
@@ -378,11 +383,13 @@ public class EventService {
         }
         Iterable<Event> events = repository.findAll(request,page);
         events.forEach(result::add);
+        statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(),now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
                         mapper.map(e.getCategory(), CategoryDto.class),
                         mapper.map(e.getInitiator(),UserShortDto.class)))
                 .collect(Collectors.toList());
     }
+
 
 }
