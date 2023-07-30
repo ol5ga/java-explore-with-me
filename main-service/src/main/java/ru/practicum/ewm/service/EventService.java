@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.client.stats.StatsClient;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.event.*;
@@ -49,6 +50,7 @@ public class EventService {
     private CategoryRepository categoryRepository;
     private LocationRepository locationRepository;
     private ParticipationRequestRepository requestRepository;
+    private StatsClient statsClient;
     private ModelMapper mapper;
 
     public List<EventShortDto> getUserEvents(long userId, int from, int size) {

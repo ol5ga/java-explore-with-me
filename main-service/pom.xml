@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>main-service</artifactId>
-    <packaging>jar</packaging>
+<!--    <packaging>jar</packaging>-->
 
     <name>main-service</name>
     <url>http://maven.apache.org</url>

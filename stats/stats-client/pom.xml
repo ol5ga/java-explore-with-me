@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>stats-client</artifactId>
-    <packaging>jar</packaging>
+<!--    <packaging>jar</packaging>-->
     <dependencies>
         <dependency>
             <groupId>ru.practicum</groupId>
