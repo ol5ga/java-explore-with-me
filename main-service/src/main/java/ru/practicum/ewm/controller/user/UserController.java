@@ -9,6 +9,7 @@ import ru.practicum.ewm.dto.user.UserRequest;
 import ru.practicum.ewm.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class UserController {
     @GetMapping
     public List<UserDto> getUser(@RequestParam(required = false) List<Long> ids,
                                  @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                 @RequestParam(defaultValue = "10") @PositiveOrZero Integer size) {
+                                 @RequestParam(defaultValue = "10") @Positive Integer size) {
         return service.getUsers(ids, from, size);
     }
 

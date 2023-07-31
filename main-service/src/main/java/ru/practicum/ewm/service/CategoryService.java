@@ -62,12 +62,7 @@ public class CategoryService {
     }
 
     public List<Category> getAllCategories(Integer from, Integer size) {
-        List<Category> all = new ArrayList<>();
-        if (from < 0 || size < 0) {
-            throw new IllegalArgumentException("Запрос составлен некорректно");
-        }
-        all = repository.findAll(PageRequest.of(from / size, size)).toList();
-        return all;
+        return repository.findAll(PageRequest.of(from / size, size)).toList();
     }
 
     public Category getCategory(long id) {

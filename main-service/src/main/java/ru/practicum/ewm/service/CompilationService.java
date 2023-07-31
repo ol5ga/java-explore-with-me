@@ -79,9 +79,6 @@ public class CompilationService {
     }
 
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
-        if (from < 0 || size < 0) {
-            throw new IllegalArgumentException("Запрос составлен некорректно");
-        }
         List<Compilation> compilations = new ArrayList<>();
         if (pinned != null) {
             compilations = repository.findAllByPinned(pinned, PageRequest.of(from / size, size));
