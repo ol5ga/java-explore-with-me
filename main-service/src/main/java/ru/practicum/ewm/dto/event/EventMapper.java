@@ -1,5 +1,6 @@
 package ru.practicum.ewm.dto.event;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
@@ -10,9 +11,9 @@ import ru.practicum.ewm.model.user.User;
 
 import java.time.LocalDateTime;
 
-
+@UtilityClass
 public class EventMapper {
-    public static Event toEvent(NewEventDto request, Category category, LocalDateTime now, User user, Location location) {
+    public Event toEvent(NewEventDto request, Category category, LocalDateTime now, User user, Location location) {
         return Event.builder()
                 .annotation(request.getAnnotation())
                 .category(category)
@@ -32,7 +33,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventFullDto toEventFullDto(Event event, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto) {
+    public EventFullDto toEventFullDto(Event event, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto) {
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
@@ -53,7 +54,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event, CategoryDto categoryDto, UserShortDto userDto) {
+    public EventShortDto toEventShortDto(Event event, CategoryDto categoryDto, UserShortDto userDto) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)

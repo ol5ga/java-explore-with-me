@@ -1,9 +1,10 @@
 package ru.practicum.ewm.dto.request;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.model.request.ParticipationRequest;
-
+@UtilityClass
 public class RequestMapper {
-    public static ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {
+    public ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {
         return ParticipationRequestDto.builder()
                 .id(request.getId())
                 .created(request.getCreated())
