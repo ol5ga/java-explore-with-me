@@ -29,6 +29,7 @@ import ru.practicum.ewm.model.event.EventState;
 import ru.practicum.ewm.model.event.QEvent;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.request.ParticipationRequest;
+import ru.practicum.ewm.model.request.ParticipationState;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.*;
 
@@ -61,7 +62,7 @@ public class EventService {
         Map<Long, Integer> views = getViews(events);
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(event, "APPROVED").size(),
+                        requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size(),
                         mapper.map(event.getCategory(), CategoryDto.class),
                         mapper.map(event.getInitiator(), UserShortDto.class),views))
                 .collect(Collectors.toList());
@@ -173,33 +174,33 @@ public class EventService {
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             throw new ValidationException("Запрос составлен некорректно");
         }
-        int pendingRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event,"PENDING").size();
-        if(event.getParticipantLimit() == pendingRequest){
+        int pendingRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event,ParticipationState.CONFIRMED).size();
+        if(event.getParticipantLimit() <= pendingRequest){
             throw new ConflictException("Достигнут лимит одобренных заявок");
         }
         List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
         List<ParticipationRequest> confirmed = new ArrayList<>();
         List<ParticipationRequest> rejected = new ArrayList<>();
-        if (request.getStatus().equals("CONFIRMED")) {
+        if (request.getStatus().equals(ParticipationState.CONFIRMED)) {
             for (ParticipationRequest pR : requests) {
-                if (!pR.getStatus().equals("PENDING")) {
+                if (!pR.getStatus().equals(ParticipationState.PENDING)) {
                     throw new ConflictException("Заявка должна быть в состоянии ожидания");
                 }
                 if (event.getParticipantLimit() > pendingRequest) {
-                    repository.save(event);
-                    pR.setStatus("CONFIRMED");
+                    pR.setStatus(ParticipationState.CONFIRMED);
                     confirmed.add(pR);
                 } else {
-                    pR.setStatus("REJECTED");
+                    pR.setStatus(ParticipationState.REJECTED);
                     rejected.add(pR);
                 }
             }
         } else {
             for (ParticipationRequest pR : requests) {
-                pR.setStatus("REJECTED");
+                pR.setStatus(ParticipationState.REJECTED);
                 rejected.add(pR);
             }
         }
+        confirmed.stream().forEach(r -> requestRepository.save(r));
         List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
         List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
         return EventRequestStatusUpdateResult.builder()
@@ -315,7 +316,7 @@ public class EventService {
     }
 
     private EventFullDto collectToEventFullDto(Event event, Integer views) {
-        Integer confirmedRequests = requestRepository.findAllByEvent(event).size();
+        Integer confirmedRequests = requestRepository.findAllByEventAndStatusOrderByCreated(event,ParticipationState.CONFIRMED).size();
         CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
         UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
@@ -377,12 +378,12 @@ public class EventService {
 
         if (onlyAvailable != null && onlyAvailable) {
             result.stream()
-                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size() <= e.getParticipantLimit())
+                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e,ParticipationState.CONFIRMED).size() <= e.getParticipantLimit())
                     .collect(Collectors.toList());
         }
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size(),
+                        requestRepository.findAllByEventAndStatusOrderByCreated(e,ParticipationState.CONFIRMED).size(),
                         mapper.map(e.getCategory(), CategoryDto.class),
                         mapper.map(e.getInitiator(), UserShortDto.class),views))
                 .collect(Collectors.toList());

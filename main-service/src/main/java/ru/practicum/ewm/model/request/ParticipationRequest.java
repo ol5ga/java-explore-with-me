@@ -29,5 +29,6 @@ public class ParticipationRequest {
     @ManyToOne
     private Event event;
     @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ParticipationState status;
 }

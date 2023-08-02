@@ -12,6 +12,7 @@ import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.event.EventState;
 import ru.practicum.ewm.model.request.ParticipationRequest;
+import ru.practicum.ewm.model.request.ParticipationState;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.ParticipationRequestRepository;
@@ -59,11 +60,11 @@ public class RequestService {
             log.info("Достигнут лимит участников");
             throw new ConflictException("Нарушение целостности данных");
         }
-        String state;
+        ParticipationState state;
         if (!event.getRequestModeration() || event.getParticipantLimit().equals(0)) {
-            state = "CONFIRMED";
+            state = ParticipationState.CONFIRMED;
         } else {
-            state = "PENDING";
+            state = ParticipationState.PENDING;
         }
         ParticipationRequest request = ParticipationRequest.builder()
                 .requester(requester)
@@ -79,11 +80,11 @@ public class RequestService {
         User requester = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
         ParticipationRequest request = repository.findById(requestId).orElseThrow(() -> new StorageException("Запрос не найден или недоступен"));
 
-        request.setStatus("CANCELED");
-        Event event = eventRepository.findById(request.getEvent().getId()).orElseThrow();
-        if (request.getStatus().equals("CONFIRMED")) {
-            eventRepository.save(event);
-        }
+        request.setStatus(ParticipationState.CANCELED);
+//        Event event = eventRepository.findById(request.getEvent().getId()).orElseThrow();
+//        if (request.getStatus().equals("CONFIRMED")) {
+//            eventRepository.save(event);
+//        }
         repository.delete(request);
         return RequestMapper.toParticipationRequestDto(request);
     }
