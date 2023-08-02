@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.client.stats.StatsClient;
 import ru.practicum.dto.stats.EndpointHit;
+import ru.practicum.dto.stats.ViewStats;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.event.*;
 import ru.practicum.ewm.dto.location.LocationDto;
@@ -34,7 +35,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,10 +57,11 @@ public class EventService {
     public List<EventShortDto> getUserEvents(long userId, int from, int size) {
         User initiator = userRepository.findById(userId).orElseThrow();
         List<Event> events = repository.findAllByInitiatorOrderById(initiator, PageRequest.of(from / size, size));
+        Map<Long, Integer> views = getViews(events);
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
                         mapper.map(event.getCategory(), CategoryDto.class),
-                        mapper.map(event.getInitiator(), UserShortDto.class)))
+                        mapper.map(event.getInitiator(), UserShortDto.class),views))
                 .collect(Collectors.toList());
     }
 
@@ -80,7 +84,8 @@ public class EventService {
         Location location = locationRepository.save(mapper.map(request.getLocation(), Location.class));
 
         Event event = repository.save(EventMapper.toEvent(request, category, now, user, location));
-        return collectToEventFullDto(event);
+        Map<Long, Integer> views = getViews(List.of(event));
+        return collectToEventFullDto(event,views.get(event.getId()));
     }
 
 
@@ -89,7 +94,8 @@ public class EventService {
         if (event.getInitiator().getId() != userId) {
             throw new ValidationException("Запрос составлен некорректно");
         }
-        return collectToEventFullDto(event);
+        Map<Long, Integer> views = getViews(List.of(event));
+        return collectToEventFullDto(event,views.get(eventId));
     }
 
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
@@ -139,8 +145,8 @@ public class EventService {
         if (request.getTitle() != null) {
             event.setTitle(request.getTitle());
         }
-        repository.save(event);
-        return collectToEventFullDto(repository.save(event));
+        Map<Long, Integer> views = getViews(List.of(event));
+        return collectToEventFullDto(repository.save(event),views.get(eventId));
     }
 
     public List<ParticipationRequestDto> getEventsRequests(long userId, long eventId) {
@@ -238,8 +244,9 @@ public class EventService {
             Iterable<Event> events = repository.findAll(request, PageRequest.of(from / size, size));
             events.forEach(result::add);
         }
+        Map<Long, Integer> views = getViews(result);
         return result.stream()
-                .map(this::collectToEventFullDto)
+                .map(e -> collectToEventFullDto(e, views.get(e)))
                 .collect(Collectors.toList());
     }
 
@@ -300,8 +307,8 @@ public class EventService {
         if (request.getTitle() != null) {
             event.setTitle(request.getTitle());
         }
-        repository.save(event);
-        return collectToEventFullDto(repository.save(event));
+        Map<Long, Integer> views = getViews(List.of(event));
+        return collectToEventFullDto(repository.save(event), views.get(eventId));
     }
 
     public EventFullDto getEvent(long eventId, HttpServletRequest httpRequest) {
@@ -309,16 +316,17 @@ public class EventService {
         if (event.getState().equals("PENDING") || event.getState().equals("CANCELED")) {
             throw new StorageException("Запрос составлен некорректно");
         }
-        event.setViews(event.getViews() + 1);
+//        event.setViews(event.getViews() + 1);
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        return collectToEventFullDto(event);
+        Map<Long, Integer> views = getViews(List.of(event));
+        return collectToEventFullDto(event, views.get(eventId));
     }
 
-    private EventFullDto collectToEventFullDto(Event event) {
+    private EventFullDto collectToEventFullDto(Event event, Integer views) {
         CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
         UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
-        return EventMapper.toEventFullDto(event, categoryDto, userDto, locationDto);
+        return EventMapper.toEventFullDto(event, categoryDto, userDto, locationDto,views);
     }
 
     public List<EventShortDto> getEvents(String text, List<Long> categoriesId, Boolean paid, LocalDateTime rangeStart,
@@ -376,12 +384,25 @@ public class EventService {
         Iterable<Event> events = repository.findAll(request, page);
         events.forEach(result::add);
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        Map<Long, Integer> views = getViews(result);
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
                         mapper.map(e.getCategory(), CategoryDto.class),
-                        mapper.map(e.getInitiator(), UserShortDto.class)))
+                        mapper.map(e.getInitiator(), UserShortDto.class),views))
                 .collect(Collectors.toList());
     }
 
-
+    private Map<Long, Integer> getViews(List<Event> result){
+        List<String> uris = result.stream()
+                .map(e -> e.getId())
+                .map(e ->String.format("/events/%d", e))
+                .collect(Collectors.toList());
+        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,false);
+        Map<Long, Integer> views = new HashMap<>();
+        for (ViewStats view : stats) {
+            String index = view.getUri().substring(8);
+            views.put(Long.parseLong(index), Math.toIntExact(view.getHits()));
+        }
+        return views;
+    }
 }

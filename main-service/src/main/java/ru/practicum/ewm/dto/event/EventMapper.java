@@ -10,6 +10,7 @@ import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.user.User;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @UtilityClass
 public class EventMapper {
@@ -33,7 +34,7 @@ public class EventMapper {
                 .build();
     }
 
-    public EventFullDto toEventFullDto(Event event, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto) {
+    public EventFullDto toEventFullDto(Event event, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto, Integer views) {
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
@@ -50,11 +51,11 @@ public class EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .views(views)
                 .build();
     }
 
-    public EventShortDto toEventShortDto(Event event, CategoryDto categoryDto, UserShortDto userDto) {
+    public EventShortDto toEventShortDto(Event event, CategoryDto categoryDto, UserShortDto userDto, Map<Long, Integer> views) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
@@ -64,7 +65,7 @@ public class EventMapper {
                 .initiator(userDto)
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .views(views.get(event.getId()))
                 .build();
     }
 }

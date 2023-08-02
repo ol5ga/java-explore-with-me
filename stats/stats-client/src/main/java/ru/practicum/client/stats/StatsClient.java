@@ -11,11 +11,13 @@ import ru.practicum.dto.stats.EndpointHit;
 import ru.practicum.dto.stats.ViewStats;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class StatsClient {
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final RestTemplate restTemplate;
     private String uri;
@@ -38,7 +40,7 @@ public class StatsClient {
         ResponseEntity<List<ViewStats>> response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
                 new ParameterizedTypeReference<>() {
                 },
-                Map.of("start", start, "end", end, "uris", uris, "unique", unique)
+                Map.of("start", start.format(formatter), "end", end.format(formatter), "uris", uris, "unique", unique)
         );
         return response.getBody();
     }

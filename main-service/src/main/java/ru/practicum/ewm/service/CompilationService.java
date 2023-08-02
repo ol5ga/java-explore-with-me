@@ -6,6 +6,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.client.stats.StatsClient;
+import ru.practicum.dto.stats.ViewStats;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
 import ru.practicum.ewm.dto.compilations.CompilationMapper;
@@ -22,8 +24,11 @@ import ru.practicum.ewm.repository.CompilationRepository;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.ParticipationRequestRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +38,8 @@ public class CompilationService {
     private CompilationRepository repository;
     private EventRepository eventRepository;
     private ParticipationRequestRepository requestRepository;
+    private StatsClient statsClient;
+
     private ModelMapper mapper;
 
     public CompilationDto addCompilation(NewCompilationDto request) {
@@ -92,10 +99,11 @@ public class CompilationService {
 
     private CompilationDto collectToCompilationDto(Compilation compilation) {
         List<EventShortDto> shortEvents = new ArrayList<>();
+        Map<Long, Integer> views = getViews(compilation.getEvents());
         for (Event event : compilation.getEvents()) {
             CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
             UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
-            EventShortDto shortEvent = EventMapper.toEventShortDto(event, categoryDto, userDto);
+            EventShortDto shortEvent = EventMapper.toEventShortDto(event, categoryDto, userDto,views);
             shortEvents.add(shortEvent);
         }
         return CompilationMapper.toCompilationDto(compilation, shortEvents);
@@ -104,5 +112,19 @@ public class CompilationService {
     public CompilationDto getCompilation(Long compId) {
         Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
         return collectToCompilationDto(compilation);
+    }
+
+    private Map<Long, Integer> getViews(List<Event> result){
+        List<String> uris = result.stream()
+                .map(e -> e.getId())
+                .map(e ->String.format("/events/%d", e))
+                .collect(Collectors.toList());
+        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,true);
+        Map<Long, Integer> views = new HashMap<>();
+        for (ViewStats view : stats) {
+            String index = view.getUri().substring(8);
+            views.put(Long.parseLong(index), Math.toIntExact(view.getHits()));
+        }
+        return views;
     }
 }

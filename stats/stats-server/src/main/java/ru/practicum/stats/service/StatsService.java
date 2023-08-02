@@ -23,12 +23,14 @@ public class StatsService {
     public void add(EndpointHit hit) {
         Stats stats = StatsMapper.toStats(hit);
         statsRepository.save(stats);
+        List<Stats> save = statsRepository.findAll();
     }
 
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         if (start.isAfter(end) || start.isEqual(end))
             throw new ValidationException("Некоректно указан интервал поиска");
         List<ViewStats> stats;
+        List<Stats> save = statsRepository.findAll();
         if (uris == null || uris.isEmpty()) {
             if (unique) {
                 stats = statsRepository.getStatsUnique(start, end);
