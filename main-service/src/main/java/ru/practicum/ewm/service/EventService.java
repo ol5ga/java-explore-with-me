@@ -352,8 +352,6 @@ public class EventService {
         if (rangeEnd != null) {
             conditions.add(event.eventDate.loe(rangeEnd));
         }
-
-
         List<Event> result = new ArrayList<>();
         BooleanExpression request = event.state.like("PUBLISHED");
         Pageable page = null;
@@ -382,7 +380,6 @@ public class EventService {
                     .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size() <= e.getParticipantLimit())
                     .collect(Collectors.toList());
         }
-
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
                         requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size(),
