@@ -25,6 +25,7 @@ import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.event.Event;
+import ru.practicum.ewm.model.event.EventState;
 import ru.practicum.ewm.model.event.QEvent;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.request.ParticipationRequest;
@@ -102,7 +103,7 @@ public class EventService {
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Event event = repository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено или недоступно"));
-        if (event.getState().equals("PUBLISHED")) {
+        if (event.getState().equals(EventState.PUBLISHED)) {
             throw new ConflictException("Событие не удовлетворяет правилам редактирования");
         }
         if (event.getInitiator().getId() != userId) {
@@ -138,9 +139,9 @@ public class EventService {
         }
         if (request.getStateAction() != null) {
             if (request.getStateAction().equals("SEND_TO_REVIEW")) {
-                event.setState("PENDING");
+                event.setState(EventState.PENDING);
             } else if (request.getStateAction().equals("CANCEL_REVIEW")) {
-                event.setState("CANCELED");
+                event.setState(EventState.CANCELED);
             }
         }
         if (request.getTitle() != null) {
@@ -156,11 +157,9 @@ public class EventService {
             throw new ValidationException("Запрос составлен некорректно");
         }
         List<ParticipationRequest> requests = requestRepository.findAllByEvent(event);
-        List<ParticipationRequestDto> response = new ArrayList<>();
-        response = requests.stream()
+        return requests.stream()
                 .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
-        return response;
     }
 
     public EventRequestStatusUpdateResult updateRequestStatus(long userId, long eventId, EventRequestStatusUpdateRequest request) {
@@ -210,7 +209,7 @@ public class EventService {
     }
 
 
-    public List<EventFullDto> searchEvents(List<Long> usersId, List<String> states, List<Long> categoriesId, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+    public List<EventFullDto> searchEvents(List<Long> usersId, List<EventState> states, List<Long> categoriesId, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         QEvent event = QEvent.event;
         List<BooleanExpression> conditions = new ArrayList<>();
         if (usersId != null) {
@@ -247,7 +246,7 @@ public class EventService {
         }
         Map<Long, Integer> views = getViews(result);
         return result.stream()
-                .map(e -> collectToEventFullDto(e, views.get(e)))
+                .map(e -> collectToEventFullDto(e, views.get(e.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -283,17 +282,18 @@ public class EventService {
             event.setRequestModeration(request.getRequestModeration());
         }
         if (request.getStateAction() != null) {
-            if (request.getStateAction().equals("PUBLISH_EVENT") && (event.getState().equals("PUBLISHED") || (event.getState().equals("REJECTED")))) {
+            if (request.getStateAction().equals("PUBLISH_EVENT") &&
+                    (event.getState().equals(EventState.PUBLISHED) || (event.getState().equals(EventState.CANCELED)))) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
-            if (request.getStateAction().equals("REJECT_EVENT") && event.getState().equals("PUBLISHED")) {
+            if (request.getStateAction().equals("REJECT_EVENT") && event.getState().equals(EventState.PUBLISHED)) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
             if (request.getStateAction().equals("PUBLISH_EVENT")) {
                 event.setPublishedOn(now);
-                event.setState("PUBLISHED");
+                event.setState(EventState.PUBLISHED);
             } else if (request.getStateAction().equals("REJECT_EVENT")) {
-                event.setState("REJECTED");
+                event.setState(EventState.CANCELED);
             }
         }
         if (request.getTitle() != null) {
@@ -305,7 +305,7 @@ public class EventService {
 
     public EventFullDto getEvent(long eventId, HttpServletRequest httpRequest) {
         Event event = repository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено или недоступно"));
-        if (event.getState().equals("PENDING") || event.getState().equals("CANCELED")) {
+        if (event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED)) {
             throw new StorageException("Запрос составлен некорректно");
         }
 //        event.setViews(event.getViews() + 1);
@@ -353,7 +353,7 @@ public class EventService {
             conditions.add(event.eventDate.loe(rangeEnd));
         }
         List<Event> result = new ArrayList<>();
-        BooleanExpression request = event.state.like("PUBLISHED");
+        BooleanExpression request = event.state.eq(EventState.PUBLISHED);
         Pageable page = null;
         if (!conditions.isEmpty()) {
             for (BooleanExpression condition : conditions) {

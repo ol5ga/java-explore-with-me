@@ -10,6 +10,7 @@ import ru.practicum.ewm.dto.request.RequestMapper;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.event.Event;
+import ru.practicum.ewm.model.event.EventState;
 import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.EventRepository;
@@ -50,7 +51,7 @@ public class RequestService {
             log.info("Для этого пользователя нельзя создать запрос");
             throw new ConflictException("Нарушение целостности данных");
         }
-        if (!event.getState().equals("PUBLISHED")) {
+        if (!event.getState().equals(EventState.PUBLISHED)) {
             log.info("Событие не опубликовано");
             throw new ConflictException("Нарушение целостности данных");
         }

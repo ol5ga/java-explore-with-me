@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.UpdateEventAdminRequest;
+import ru.practicum.ewm.model.event.EventState;
 import ru.practicum.ewm.service.EventService;
 
 import javax.validation.Valid;
@@ -23,7 +24,7 @@ public class EventAdminController {
 
     @GetMapping
     public List<EventFullDto> searchEvents(@RequestParam(required = false) List<Long> users,
-                                           @RequestParam(required = false) List<String> states,
+                                           @RequestParam(required = false) List<EventState> states,
                                            @RequestParam(required = false) List<Long> categories,
                                            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
                                            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,

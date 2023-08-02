@@ -6,6 +6,7 @@ import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
 import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.model.event.Event;
+import ru.practicum.ewm.model.event.EventState;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.user.User;
 
@@ -27,7 +28,7 @@ public class EventMapper {
                 .participantLimit(request.getParticipantLimit())
                 .publishedOn(null)
                 .requestModeration(request.getRequestModeration())
-                .state("PENDING")
+                .state(EventState.PENDING)
                 .title(request.getTitle())
                 .views(0)
                 .build();
@@ -48,7 +49,7 @@ public class EventMapper {
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(event.getPublishedOn())
                 .requestModeration(event.getRequestModeration())
-                .state(event.getState())
+                .state(event.getState().toString())
                 .title(event.getTitle())
                 .views(views)
                 .build();

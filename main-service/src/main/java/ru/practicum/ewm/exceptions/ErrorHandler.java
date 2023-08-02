@@ -47,11 +47,4 @@ public class ErrorHandler {
         log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        log.debug("Получен статус 500 Interval server error {}", e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
-    }
 }

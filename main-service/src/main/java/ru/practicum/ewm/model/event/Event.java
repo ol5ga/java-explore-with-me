@@ -47,7 +47,8 @@ public class Event {
     @Column(name = "request_moderation")
     private Boolean requestModeration;
     @Column
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private EventState state;
     @Column
     private String title;
     @Column
