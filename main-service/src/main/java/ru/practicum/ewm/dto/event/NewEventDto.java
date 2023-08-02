@@ -8,10 +8,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 import ru.practicum.ewm.dto.location.LocationDto;
 
-import javax.validation.constraints.Future;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 @Data
@@ -32,10 +30,12 @@ public class NewEventDto {
     @Future
     private LocalDateTime eventDate;
     @NotNull
+    @Valid
     private LocationDto location;
     @Nullable
     private Boolean paid;
     @Nullable
+    @PositiveOrZero
     private Integer participantLimit;
     @Nullable
     private Boolean requestModeration;

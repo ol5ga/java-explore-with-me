@@ -37,23 +37,23 @@ public class UserService {
     }
 
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
-//        if (from < 0 || size < 0) {
-//            throw new IllegalArgumentException("Запрос составлен некорректно");
-//        }
-        List<User> users = new ArrayList<>();
+        List<User> users;
         if (ids == null) {
             users = repository.findAll(PageRequest.of(from / size, size)).toList();
         } else {
             users = repository.findAllById(ids);
         }
         return users.stream()
-                .map(user -> UserMapper.toUserDto(user))
+                .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
 
     }
 
     public void deleteUser(long id) {
-        User user = repository.findById(id).orElseThrow(() -> new StorageException("Пользователь не найден или недоступен"));
-        repository.deleteById(id);
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+        } else {
+            throw new StorageException("Пользователь не найден или недоступен");
+        }
     }
 }

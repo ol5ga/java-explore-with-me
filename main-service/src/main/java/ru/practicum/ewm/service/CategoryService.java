@@ -47,9 +47,6 @@ public class CategoryService {
 
     public Category updateCategory(long id, NewCategoryDto name) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
-        if (eventRepository.findAllByCategory_Id(id).size() != 0) {
-            throw new ConflictException("Существуют события, связанные с категорией");
-        }
         if (name.getName() != null) {
             category.setName(name.getName());
         }

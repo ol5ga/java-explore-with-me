@@ -28,11 +28,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RequestService {
 
-    ParticipationRequestRepository repository;
-    UserRepository userRepository;
-    EventRepository eventRepository;
+    private ParticipationRequestRepository repository;
+    private UserRepository userRepository;
+    private EventRepository eventRepository;
 
-    ModelMapper mapper;
+    private ModelMapper mapper;
 
     public List<ParticipationRequestDto> getUsersRequests(long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
@@ -81,10 +81,6 @@ public class RequestService {
         ParticipationRequest request = repository.findById(requestId).orElseThrow(() -> new StorageException("Запрос не найден или недоступен"));
 
         request.setStatus(ParticipationState.CANCELED);
-//        Event event = eventRepository.findById(request.getEvent().getId()).orElseThrow();
-//        if (request.getStatus().equals("CONFIRMED")) {
-//            eventRepository.save(event);
-//        }
         repository.delete(request);
         return RequestMapper.toParticipationRequestDto(request);
     }
