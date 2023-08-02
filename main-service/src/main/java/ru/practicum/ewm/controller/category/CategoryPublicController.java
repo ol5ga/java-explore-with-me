@@ -21,7 +21,7 @@ public class CategoryPublicController {
 
     @GetMapping
     public List<Category> getAllCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                           @Valid @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                           @RequestParam(defaultValue = "10") @Positive Integer size) {
         return service.getAllCategories(from, size);
     }
 
