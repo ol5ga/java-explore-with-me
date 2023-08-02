@@ -10,6 +10,7 @@ import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.model.event.UserStateAction;
 
 import javax.validation.constraints.Future;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -28,6 +29,7 @@ public class UpdateEventUserRequest {
     private LocalDateTime eventDate;
     private LocationDto location;
     private Boolean paid;
+    @PositiveOrZero
     private Integer participantLimit;
     private Boolean requestModeration;
     private UserStateAction stateAction;

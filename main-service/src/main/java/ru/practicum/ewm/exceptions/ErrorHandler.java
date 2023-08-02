@@ -47,4 +47,5 @@ public class ErrorHandler {
         log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
+
 }

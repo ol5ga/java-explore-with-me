@@ -53,6 +53,7 @@ public class EventService {
     private ParticipationRequestRepository requestRepository;
     private StatsClient statsClient;
     private ModelMapper mapper;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public List<EventShortDto> getUserEvents(long userId, int from, int size) {
         User initiator = userRepository.findById(userId).orElseThrow();
@@ -372,8 +373,9 @@ public class EventService {
         }
         Iterable<Event> events = repository.findAll(request, page);
         events.forEach(result::add);
-        statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(formatter)));
         Map<Long, Integer> views = getViews(result);
+
 
         if (onlyAvailable != null && onlyAvailable) {
             result.stream()
