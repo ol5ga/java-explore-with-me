@@ -18,7 +18,6 @@ public class EventMapper {
         return Event.builder()
                 .annotation(request.getAnnotation())
                 .category(category)
-                .confirmedRequests(0)
                 .createdOn(now)
                 .description(request.getDescription())
                 .eventDate(request.getEventDate())
@@ -34,11 +33,11 @@ public class EventMapper {
                 .build();
     }
 
-    public EventFullDto toEventFullDto(Event event, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto, Integer views) {
+    public EventFullDto toEventFullDto(Event event, Integer confirmedRequests, CategoryDto categoryDto, UserShortDto userDto, LocationDto locationDto, Integer views) {
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
-                .confirmedRequests(event.getConfirmedRequests())
+                .confirmedRequests(confirmedRequests)
                 .createdOn(event.getCreatedOn())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
@@ -55,11 +54,11 @@ public class EventMapper {
                 .build();
     }
 
-    public EventShortDto toEventShortDto(Event event, CategoryDto categoryDto, UserShortDto userDto, Map<Long, Integer> views) {
+    public EventShortDto toEventShortDto(Event event, Integer confirmedRequests, CategoryDto categoryDto, UserShortDto userDto, Map<Long, Integer> views) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
-                .confirmedRequests(event.getConfirmedRequests())
+                .confirmedRequests(confirmedRequests)
                 .eventDate(event.getEventDate())
                 .id(event.getId())
                 .initiator(userDto)
