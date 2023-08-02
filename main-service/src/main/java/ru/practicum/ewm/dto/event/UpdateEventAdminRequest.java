@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewm.dto.location.LocationDto;
+import ru.practicum.ewm.model.event.AdminStateAction;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.Size;
@@ -26,7 +27,7 @@ public class UpdateEventAdminRequest {
     private Boolean paid;
     private Integer participantLimit;
     private Boolean requestModeration;
-    private String stateAction;
+    private AdminStateAction stateAction;
     @Size(min = 3, max = 120)
     private String title;
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.location.LocationDto;
+import ru.practicum.ewm.model.event.UserStateAction;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.Size;
@@ -29,7 +30,9 @@ public class UpdateEventUserRequest {
     private Boolean paid;
     private Integer participantLimit;
     private Boolean requestModeration;
-    private String stateAction;
+    private UserStateAction stateAction;
     @Size(min = 3, max = 120)
     private String title;
+
+
 }

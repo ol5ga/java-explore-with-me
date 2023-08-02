@@ -24,9 +24,7 @@ import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.model.category.Category;
-import ru.practicum.ewm.model.event.Event;
-import ru.practicum.ewm.model.event.EventState;
-import ru.practicum.ewm.model.event.QEvent;
+import ru.practicum.ewm.model.event.*;
 import ru.practicum.ewm.model.location.Location;
 import ru.practicum.ewm.model.request.ParticipationRequest;
 import ru.practicum.ewm.model.request.ParticipationState;
@@ -139,9 +137,9 @@ public class EventService {
             event.setRequestModeration(request.getRequestModeration());
         }
         if (request.getStateAction() != null) {
-            if (request.getStateAction().equals("SEND_TO_REVIEW")) {
+            if (request.getStateAction().equals(UserStateAction.SEND_TO_REVIEW)) {
                 event.setState(EventState.PENDING);
-            } else if (request.getStateAction().equals("CANCEL_REVIEW")) {
+            } else if (request.getStateAction().equals(UserStateAction.CANCEL_REVIEW)) {
                 event.setState(EventState.CANCELED);
             }
         }
@@ -283,17 +281,18 @@ public class EventService {
             event.setRequestModeration(request.getRequestModeration());
         }
         if (request.getStateAction() != null) {
-            if (request.getStateAction().equals("PUBLISH_EVENT") &&
+            if (request.getStateAction().equals(AdminStateAction.PUBLISH_EVENT) &&
                     (event.getState().equals(EventState.PUBLISHED) || (event.getState().equals(EventState.CANCELED)))) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
-            if (request.getStateAction().equals("REJECT_EVENT") && event.getState().equals(EventState.PUBLISHED)) {
+            if (request.getStateAction().equals(AdminStateAction.REJECT_EVENT)
+                    && event.getState().equals(EventState.PUBLISHED)) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
-            if (request.getStateAction().equals("PUBLISH_EVENT")) {
+            if (request.getStateAction().equals(AdminStateAction.PUBLISH_EVENT)) {
                 event.setPublishedOn(now);
                 event.setState(EventState.PUBLISHED);
-            } else if (request.getStateAction().equals("REJECT_EVENT")) {
+            } else if (request.getStateAction().equals(AdminStateAction.REJECT_EVENT)) {
                 event.setState(EventState.CANCELED);
             }
         }
