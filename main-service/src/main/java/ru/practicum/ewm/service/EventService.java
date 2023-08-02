@@ -279,18 +279,9 @@ public class EventService {
         if (request.getParticipantLimit() != null) {
             event.setParticipantLimit(request.getParticipantLimit());
         }
-//        if (request.getRequestModeration() != null) {
-//            event.setRequestModeration(request.getRequestModeration());
-//            if (!request.getRequestModeration() && event.getConfirmedRequests() < event.getParticipantLimit()) {
-//                List<ParticipationRequest> requests = requestRepository.findAllByEventAndStatusOrderByCreated(event, "PENDING");
-//                for (ParticipationRequest participationRequest : requests) {
-//                    if (event.getConfirmedRequests() < event.getParticipantLimit()) {
-//                        participationRequest.setStatus("CONFIRMED");
-//                        event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-//                    }
-//                }
-//            }
-//        }
+        if (request.getRequestModeration() != null) {
+            event.setRequestModeration(request.getRequestModeration());
+        }
         if (request.getStateAction() != null) {
             if (request.getStateAction().equals("PUBLISH_EVENT") && (event.getState().equals("PUBLISHED") || (event.getState().equals("REJECTED")))) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
@@ -361,9 +352,7 @@ public class EventService {
         if (rangeEnd != null) {
             conditions.add(event.eventDate.loe(rangeEnd));
         }
-        if (onlyAvailable != null && onlyAvailable) {
-            conditions.add(event.confirmedRequests.goe(event.participantLimit));
-        }
+
 
         List<Event> result = new ArrayList<>();
         BooleanExpression request = event.state.like("PUBLISHED");
@@ -387,6 +376,13 @@ public class EventService {
         events.forEach(result::add);
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         Map<Long, Integer> views = getViews(result);
+
+        if (onlyAvailable != null && onlyAvailable) {
+            result.stream()
+                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size() <= e.getParticipantLimit())
+                    .collect(Collectors.toList());
+        }
+
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
                         requestRepository.findAllByEventAndStatusOrderByCreated(e,"APPROVED").size(),
