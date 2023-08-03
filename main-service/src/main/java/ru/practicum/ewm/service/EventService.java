@@ -361,29 +361,32 @@ public class EventService {
         if (sort != null) {
             if (sort.equals("EVENT_DATE")) {
                 page = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "eventDate"));
-            } else if (sort.equals("VIEWS")) {
-                page = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "views"));
+            } else {
+                page = PageRequest.of(from / size, size);
             }
-        } else {
-            page = PageRequest.of(from / size, size);
         }
         Iterable<Event> events = repository.findAll(request, page);
         events.forEach(result::add);
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(formatter)));
         Map<Long, Integer> views = getViews(result);
 
-
         if (onlyAvailable != null && onlyAvailable) {
-            result.stream()
+            result = result.stream()
                     .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size() <= e.getParticipantLimit())
                     .collect(Collectors.toList());
         }
-        return result.stream()
+        List<EventShortDto> resultDto = result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
                         requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size(),
                         mapper.map(e.getCategory(), CategoryDto.class),
                         mapper.map(e.getInitiator(), UserShortDto.class), views))
                 .collect(Collectors.toList());
+        if (sort.equals("VIEWS")) {
+            resultDto.stream()
+                    .sorted(Comparator.comparing(EventShortDto::getViews).reversed())
+                    .collect(Collectors.toList());
+        }
+        return resultDto;
     }
 
     private Map<Long, Integer> getViews(List<Event> result) {
