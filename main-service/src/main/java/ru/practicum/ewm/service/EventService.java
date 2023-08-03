@@ -372,7 +372,7 @@ public class EventService {
 
         if (onlyAvailable != null && onlyAvailable) {
             result = result.stream()
-                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size() <= e.getParticipantLimit())
+                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size() < e.getParticipantLimit())
                     .collect(Collectors.toList());
         }
         List<EventShortDto> resultDto = result.stream()
