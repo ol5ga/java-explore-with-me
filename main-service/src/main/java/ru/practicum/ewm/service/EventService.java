@@ -34,10 +34,7 @@ import ru.practicum.ewm.repository.*;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -309,7 +306,6 @@ public class EventService {
         if (event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED)) {
             throw new StorageException("Запрос составлен некорректно");
         }
-//        event.setViews(event.getViews() + 1);
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         Map<Long, Integer> views = getViews(List.of(event));
         return collectToEventFullDto(event, views.get(eventId));
@@ -391,11 +387,14 @@ public class EventService {
     }
 
     private Map<Long, Integer> getViews(List<Event> result){
-        List<String> uris = result.stream()
+        if (result.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        String [] uris = result.stream()
                 .map(e -> e.getId())
-                .map(e ->String.format("/events/%d", e))
-                .collect(Collectors.toList());
-        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,false);
+                .map(e -> String.format("/events/%d", e))
+                .toArray(String[]::new);
+        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,true);
         Map<Long, Integer> views = new HashMap<>();
         for (ViewStats view : stats) {
             String index = view.getUri().substring(8);
@@ -403,4 +402,5 @@ public class EventService {
         }
         return views;
     }
+
 }

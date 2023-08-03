@@ -30,7 +30,6 @@ public class EventMapper {
                 .requestModeration(request.getRequestModeration())
                 .state(EventState.PENDING)
                 .title(request.getTitle())
-                .views(0)
                 .build();
     }
 

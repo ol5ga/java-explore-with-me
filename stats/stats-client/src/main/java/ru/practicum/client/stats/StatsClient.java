@@ -34,7 +34,7 @@ public class StatsClient {
 
     public List<ViewStats> getStats(LocalDateTime start,
                                     LocalDateTime end,
-                                    List<String> uris,
+                                    String[] uris,
                                     Boolean unique) {
         final String url = uri + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
         ResponseEntity<List<ViewStats>> response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,

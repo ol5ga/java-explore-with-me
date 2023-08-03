@@ -25,10 +25,7 @@ import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.ParticipationRequestRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -116,10 +113,13 @@ public class CompilationService {
     }
 
     private Map<Long, Integer> getViews(List<Event> result){
-        List<String> uris = result.stream()
+        if (result.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        String [] uris = result.stream()
                 .map(e -> e.getId())
                 .map(e ->String.format("/events/%d", e))
-                .collect(Collectors.toList());
+                .toArray(String[]::new);
         List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,true);
         Map<Long, Integer> views = new HashMap<>();
         for (ViewStats view : stats) {
