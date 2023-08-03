@@ -14,7 +14,6 @@ import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -2,6 +2,7 @@ package ru.practicum.ewm.dto.request;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.model.request.ParticipationRequest;
+
 @UtilityClass
 public class RequestMapper {
     public ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {

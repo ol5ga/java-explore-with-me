@@ -13,7 +13,6 @@ import ru.practicum.ewm.model.category.Category;
 import ru.practicum.ewm.repository.CategoryRepository;
 import ru.practicum.ewm.repository.EventRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

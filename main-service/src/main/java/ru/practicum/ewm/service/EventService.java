@@ -60,7 +60,7 @@ public class EventService {
                 .map(event -> EventMapper.toEventShortDto(event,
                         requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size(),
                         mapper.map(event.getCategory(), CategoryDto.class),
-                        mapper.map(event.getInitiator(), UserShortDto.class),views))
+                        mapper.map(event.getInitiator(), UserShortDto.class), views))
                 .collect(Collectors.toList());
     }
 
@@ -84,7 +84,7 @@ public class EventService {
 
         Event event = repository.save(EventMapper.toEvent(request, category, now, user, location));
         Map<Long, Integer> views = getViews(List.of(event));
-        return collectToEventFullDto(event,views.get(event.getId()));
+        return collectToEventFullDto(event, views.get(event.getId()));
     }
 
 
@@ -94,7 +94,7 @@ public class EventService {
             throw new ValidationException("Запрос составлен некорректно");
         }
         Map<Long, Integer> views = getViews(List.of(event));
-        return collectToEventFullDto(event,views.get(eventId));
+        return collectToEventFullDto(event, views.get(eventId));
     }
 
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
@@ -145,7 +145,7 @@ public class EventService {
             event.setTitle(request.getTitle());
         }
         Map<Long, Integer> views = getViews(List.of(event));
-        return collectToEventFullDto(repository.save(event),views.get(eventId));
+        return collectToEventFullDto(repository.save(event), views.get(eventId));
     }
 
     public List<ParticipationRequestDto> getEventsRequests(long userId, long eventId) {
@@ -170,8 +170,8 @@ public class EventService {
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             throw new ValidationException("Запрос составлен некорректно");
         }
-        int pendingRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event,ParticipationState.CONFIRMED).size();
-        if(event.getParticipantLimit() <= pendingRequest){
+        int pendingRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
+        if (event.getParticipantLimit() <= pendingRequest) {
             throw new ConflictException("Достигнут лимит одобренных заявок");
         }
         List<ParticipationRequest> requests = requestRepository.findAllById(request.getRequestIds());
@@ -312,11 +312,11 @@ public class EventService {
     }
 
     private EventFullDto collectToEventFullDto(Event event, Integer views) {
-        Integer confirmedRequests = requestRepository.findAllByEventAndStatusOrderByCreated(event,ParticipationState.CONFIRMED).size();
+        Integer confirmedRequests = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
         CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
         UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
-        return EventMapper.toEventFullDto(event,confirmedRequests, categoryDto, userDto, locationDto,views);
+        return EventMapper.toEventFullDto(event, confirmedRequests, categoryDto, userDto, locationDto, views);
     }
 
     public List<EventShortDto> getEvents(String text, List<Long> categoriesId, Boolean paid, LocalDateTime rangeStart,
@@ -375,26 +375,26 @@ public class EventService {
 
         if (onlyAvailable != null && onlyAvailable) {
             result.stream()
-                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e,ParticipationState.CONFIRMED).size() <= e.getParticipantLimit())
+                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size() <= e.getParticipantLimit())
                     .collect(Collectors.toList());
         }
         return result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(e,ParticipationState.CONFIRMED).size(),
+                        requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size(),
                         mapper.map(e.getCategory(), CategoryDto.class),
-                        mapper.map(e.getInitiator(), UserShortDto.class),views))
+                        mapper.map(e.getInitiator(), UserShortDto.class), views))
                 .collect(Collectors.toList());
     }
 
-    private Map<Long, Integer> getViews(List<Event> result){
+    private Map<Long, Integer> getViews(List<Event> result) {
         if (result.isEmpty()) {
             return Collections.emptyMap();
         }
-        String [] uris = result.stream()
+        String[] uris = result.stream()
                 .map(e -> e.getId())
                 .map(e -> String.format("/events/%d", e))
                 .toArray(String[]::new);
-        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,true);
+        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1), LocalDateTime.now(), uris, true);
         Map<Long, Integer> views = new HashMap<>();
         for (ViewStats view : stats) {
             String index = view.getUri().substring(8);

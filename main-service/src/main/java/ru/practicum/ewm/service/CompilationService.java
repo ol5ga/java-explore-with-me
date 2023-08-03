@@ -101,7 +101,7 @@ public class CompilationService {
             Integer confirmedRequest = requestRepository.findAllByEvent(event).size();
             CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
             UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
-            EventShortDto shortEvent = EventMapper.toEventShortDto(event,confirmedRequest, categoryDto, userDto,views);
+            EventShortDto shortEvent = EventMapper.toEventShortDto(event, confirmedRequest, categoryDto, userDto, views);
             shortEvents.add(shortEvent);
         }
         return CompilationMapper.toCompilationDto(compilation, shortEvents);
@@ -112,15 +112,15 @@ public class CompilationService {
         return collectToCompilationDto(compilation);
     }
 
-    private Map<Long, Integer> getViews(List<Event> result){
+    private Map<Long, Integer> getViews(List<Event> result) {
         if (result.isEmpty()) {
             return Collections.emptyMap();
         }
-        String [] uris = result.stream()
+        String[] uris = result.stream()
                 .map(e -> e.getId())
-                .map(e ->String.format("/events/%d", e))
+                .map(e -> String.format("/events/%d", e))
                 .toArray(String[]::new);
-        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1),LocalDateTime.now(),uris,true);
+        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1), LocalDateTime.now(), uris, true);
         Map<Long, Integer> views = new HashMap<>();
         for (ViewStats view : stats) {
             String index = view.getUri().substring(8);
