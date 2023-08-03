@@ -351,19 +351,14 @@ public class EventService {
         }
         List<Event> result = new ArrayList<>();
         BooleanExpression request = event.state.eq(EventState.PUBLISHED);
-        Pageable page = null;
         if (!conditions.isEmpty()) {
             for (BooleanExpression condition : conditions) {
                 request = request.and(condition);
             }
         }
-
-        if (sort != null) {
-            if (sort.equals("EVENT_DATE")) {
-                page = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "eventDate"));
-            } else {
-                page = PageRequest.of(from / size, size);
-            }
+        Pageable page = PageRequest.of(from / size, size);
+        if (sort != null && sort.equals("EVENT_DATE")) {
+            page = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "eventDate"));
         }
         Iterable<Event> events = repository.findAll(request, page);
         events.forEach(result::add);
@@ -381,7 +376,7 @@ public class EventService {
                         mapper.map(e.getCategory(), CategoryDto.class),
                         mapper.map(e.getInitiator(), UserShortDto.class), views))
                 .collect(Collectors.toList());
-        if (sort.equals("VIEWS")) {
+        if (sort != null && sort.equals("VIEWS")) {
             resultDto.stream()
                     .sorted(Comparator.comparing(EventShortDto::getViews).reversed())
                     .collect(Collectors.toList());
