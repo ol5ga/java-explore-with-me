@@ -46,9 +46,7 @@ public class CategoryService {
 
     public Category updateCategory(long id, NewCategoryDto name) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
-        if (name.getName() != null) {
-            category.setName(name.getName());
-        }
+        category.setName(name.getName());
         try {
             repository.save(category);
         } catch (DataIntegrityViolationException ex) {

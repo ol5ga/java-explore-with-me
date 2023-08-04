@@ -33,10 +33,10 @@ public class Event {
     @Column(name = "event_date")
     private LocalDateTime eventDate;
     @JoinColumn(name = "initiator_id")
-    @OneToOne
+    @ManyToOne
     private User initiator;
     @JoinColumn(name = "location_id")
-    @OneToOne
+    @ManyToOne
     private Location location;
     @Column
     private Boolean paid;

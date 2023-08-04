@@ -20,7 +20,7 @@ import java.util.List;
 @Validated
 public class EventPublicController {
 
-    EventService service;
+    private EventService service;
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,

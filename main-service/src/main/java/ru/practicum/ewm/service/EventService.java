@@ -106,13 +106,13 @@ public class EventService {
         if (event.getInitiator().getId() != userId) {
             throw new ValidationException("Запрос составлен некорректно");
         }
-        if (request.getAnnotation() != null) {
+        if (request.getAnnotation() != null && !request.getAnnotation().isBlank()) {
             event.setAnnotation(request.getAnnotation());
         }
         if (request.getCategory() != null) {
             event.setCategory(mapper.map(request.getCategory(), Category.class));
         }
-        if (request.getDescription() != null) {
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
             event.setDescription(request.getDescription());
         }
         if (request.getEventDate() != null) {
@@ -141,7 +141,7 @@ public class EventService {
                 event.setState(EventState.CANCELED);
             }
         }
-        if (request.getTitle() != null) {
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
             event.setTitle(request.getTitle());
         }
         Map<Long, Integer> views = getViews(List.of(event));
@@ -250,13 +250,13 @@ public class EventService {
     public EventFullDto adminUpdateEvent(long eventId, UpdateEventAdminRequest request) {
         Event event = repository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено или недоступно"));
         LocalDateTime now = LocalDateTime.now();
-        if (request.getAnnotation() != null) {
+        if (request.getAnnotation() != null && !request.getAnnotation().isBlank()) {
             event.setAnnotation(request.getAnnotation());
         }
         if (request.getCategory() != null) {
             event.setCategory(categoryRepository.findById(request.getCategory()).orElseThrow());
         }
-        if (request.getDescription() != null) {
+        if (request.getDescription() != null&& !request.getDescription().isBlank()) {
             event.setDescription(request.getDescription());
         }
         if (request.getEventDate() != null) {
@@ -294,7 +294,7 @@ public class EventService {
                 event.setState(EventState.CANCELED);
             }
         }
-        if (request.getTitle() != null) {
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
             event.setTitle(request.getTitle());
         }
         Map<Long, Integer> views = getViews(List.of(event));
