@@ -47,9 +47,7 @@ public class CompilationService {
         if (request.getEvents() == null || request.getEvents().isEmpty()) {
             events = new ArrayList<>();
         } else {
-            events = request.getEvents().stream()
-                    .map(event -> eventRepository.findById(event).orElseThrow())
-                    .collect(Collectors.toList());
+            events = eventRepository.findByIdIn(request.getEvents());
         }
         Compilation compilation = CompilationMapper.toCompilation(request, events);
         try {
@@ -74,9 +72,7 @@ public class CompilationService {
             compilation.setTitle(request.getTitle());
         }
         if (request.getEvents() != null) {
-            compilation.setEvents(request.getEvents().stream()
-                    .map(event -> eventRepository.findById(event).orElseThrow())
-                    .collect(Collectors.toList()));
+            compilation.setEvents(eventRepository.findByIdIn(request.getEvents()));
         }
         Compilation newCompilation = repository.save(compilation);
         return collectToCompilationDto(newCompilation);
