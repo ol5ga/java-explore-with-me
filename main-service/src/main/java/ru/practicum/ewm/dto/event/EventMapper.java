@@ -24,10 +24,10 @@ public class EventMapper {
                 .eventDate(request.getEventDate())
                 .initiator(user)
                 .location(location)
-                .paid(request.getPaid())
+                .paid(request.isPaid())
                 .participantLimit(request.getParticipantLimit())
                 .publishedOn(null)
-                .requestModeration(request.getRequestModeration())
+                .requestModeration(request.isRequestModeration())
                 .state(EventState.PENDING)
                 .title(request.getTitle())
                 .build();

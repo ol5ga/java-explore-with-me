@@ -70,15 +70,6 @@ public class EventService {
             throw new ConflictException("Событие не удовлетворяет правилам создания");
         }
         Category category = categoryRepository.findById(request.getCategory()).orElseThrow();
-        if (request.getRequestModeration() == null) {
-            request.setRequestModeration(true);
-        }
-        if (request.getPaid() == null) {
-            request.setPaid(false);
-        }
-        if (request.getParticipantLimit() == null) {
-            request.setParticipantLimit(0);
-        }
         User user = userRepository.findById(userId).orElseThrow();
         Location location = locationRepository.save(mapper.map(request.getLocation(), Location.class));
 
