@@ -188,7 +188,7 @@ public class EventService {
                 rejected.add(pR);
             }
         }
-        confirmed.stream().forEach(r -> requestRepository.save(r));
+        requestRepository.saveAll(confirmed);
         List<ParticipationRequestDto> confirmedRequests = confirmed.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
         List<ParticipationRequestDto> rejectedRequests = rejected.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
         return EventRequestStatusUpdateResult.builder()
@@ -327,9 +327,7 @@ public class EventService {
             conditions.add(event.annotation.containsIgnoreCase(text).or(event.description.containsIgnoreCase(text)));
         }
         if (categoriesId != null) {
-            List<Category> categories = categoriesId.stream()
-                    .map(cat -> categoryRepository.findById(cat).orElseThrow())
-                    .collect(Collectors.toList());
+            List<Category> categories = categoryRepository.findByIdIn(categoriesId);
             conditions.add(event.category.in(categories));
         }
         if (paid != null) {
