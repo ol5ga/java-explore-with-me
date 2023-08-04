@@ -37,6 +37,8 @@ public class CompilationService {
     private ParticipationRequestRepository requestRepository;
     private StatsClient statsClient;
 
+    private ViewService viewService;
+
     private ModelMapper mapper;
 
     public CompilationDto addCompilation(NewCompilationDto request) {
@@ -92,7 +94,7 @@ public class CompilationService {
 
     private CompilationDto collectToCompilationDto(Compilation compilation) {
         List<EventShortDto> shortEvents = new ArrayList<>();
-        Map<Long, Integer> views = getViews(compilation.getEvents());
+        Map<Long, Integer> views = viewService.getViews(compilation.getEvents());
         for (Event event : compilation.getEvents()) {
             Integer confirmedRequest = requestRepository.findAllByEvent(event).size();
             CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
@@ -106,22 +108,5 @@ public class CompilationService {
     public CompilationDto getCompilation(Long compId) {
         Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
         return collectToCompilationDto(compilation);
-    }
-
-    private Map<Long, Integer> getViews(List<Event> result) {
-        if (result.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        String[] uris = result.stream()
-                .map(e -> e.getId())
-                .map(e -> String.format("/events/%d", e))
-                .toArray(String[]::new);
-        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1), LocalDateTime.now(), uris, true);
-        Map<Long, Integer> views = new HashMap<>();
-        for (ViewStats view : stats) {
-            String index = view.getUri().substring(8);
-            views.put(Long.parseLong(index), Math.toIntExact(view.getHits()));
-        }
-        return views;
     }
 }

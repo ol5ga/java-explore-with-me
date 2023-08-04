@@ -48,6 +48,7 @@ public class EventService {
     private CategoryRepository categoryRepository;
     private LocationRepository locationRepository;
     private ParticipationRequestRepository requestRepository;
+    private ViewService viewService;
     private StatsClient statsClient;
     private ModelMapper mapper;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -55,7 +56,7 @@ public class EventService {
     public List<EventShortDto> getUserEvents(long userId, int from, int size) {
         User initiator = userRepository.findById(userId).orElseThrow();
         List<Event> events = repository.findAllByInitiatorOrderById(initiator, PageRequest.of(from / size, size));
-        Map<Long, Integer> views = getViews(events);
+        Map<Long, Integer> views = viewService.getViews(events);
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
                         requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size(),
@@ -74,7 +75,7 @@ public class EventService {
         Location location = locationRepository.save(mapper.map(request.getLocation(), Location.class));
 
         Event event = repository.save(EventMapper.toEvent(request, category, now, user, location));
-        Map<Long, Integer> views = getViews(List.of(event));
+        Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(event, views.get(event.getId()));
     }
 
@@ -84,7 +85,7 @@ public class EventService {
         if (event.getInitiator().getId() != userId) {
             throw new ValidationException("Запрос составлен некорректно");
         }
-        Map<Long, Integer> views = getViews(List.of(event));
+        Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(event, views.get(eventId));
     }
 
@@ -135,7 +136,7 @@ public class EventService {
         if (request.getTitle() != null && !request.getTitle().isBlank()) {
             event.setTitle(request.getTitle());
         }
-        Map<Long, Integer> views = getViews(List.of(event));
+        Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(repository.save(event), views.get(eventId));
     }
 
@@ -232,7 +233,7 @@ public class EventService {
             Iterable<Event> events = repository.findAll(request, PageRequest.of(from / size, size));
             events.forEach(result::add);
         }
-        Map<Long, Integer> views = getViews(result);
+        Map<Long, Integer> views = viewService.getViews(result);
         return result.stream()
                 .map(e -> collectToEventFullDto(e, views.get(e.getId())))
                 .collect(Collectors.toList());
@@ -288,7 +289,7 @@ public class EventService {
         if (request.getTitle() != null && !request.getTitle().isBlank()) {
             event.setTitle(request.getTitle());
         }
-        Map<Long, Integer> views = getViews(List.of(event));
+        Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(repository.save(event), views.get(eventId));
     }
 
@@ -298,7 +299,7 @@ public class EventService {
             throw new StorageException("Запрос составлен некорректно");
         }
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        Map<Long, Integer> views = getViews(List.of(event));
+        Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(event, views.get(eventId));
     }
 
@@ -354,7 +355,7 @@ public class EventService {
         Iterable<Event> events = repository.findAll(request, page);
         events.forEach(result::add);
         statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(formatter)));
-        Map<Long, Integer> views = getViews(result);
+        Map<Long, Integer> views = viewService.getViews(result);
 
         if (onlyAvailable != null && onlyAvailable) {
             result = result.stream()
@@ -373,23 +374,6 @@ public class EventService {
                     .collect(Collectors.toList());
         }
         return resultDto;
-    }
-
-    private Map<Long, Integer> getViews(List<Event> result) {
-        if (result.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        String[] uris = result.stream()
-                .map(e -> e.getId())
-                .map(e -> String.format("/events/%d", e))
-                .toArray(String[]::new);
-        List<ViewStats> stats = statsClient.getStats(LocalDateTime.now().minusYears(1), LocalDateTime.now(), uris, true);
-        Map<Long, Integer> views = new HashMap<>();
-        for (ViewStats view : stats) {
-            String index = view.getUri().substring(8);
-            views.put(Long.parseLong(index), Math.toIntExact(view.getHits()));
-        }
-        return views;
     }
 
 }
