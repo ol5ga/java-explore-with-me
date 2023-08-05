@@ -1,20 +1,20 @@
-package ru.practicum.ewm.comments;
+package ru.practicum.ewm.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
+import ru.practicum.ewm.comments.CommentState;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
 @Table(name = "comments")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 public class Comment {
 
     @Id

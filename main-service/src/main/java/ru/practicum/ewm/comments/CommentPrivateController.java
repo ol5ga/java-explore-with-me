@@ -14,10 +14,10 @@ public class CommentPrivateController {
 
     CommentService service;
 
-    @PostMapping(path = "/{userId}/comment")
+    @PostMapping(path = "/{userId}/comment/{eventId}")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public CommentDto addComment(@PathVariable long userId, @Valid @RequestBody NewCommentDto newComment){
-        return service.addComment(userId, newComment);
+    public CommentDto addComment(@PathVariable long userId, @PathVariable long eventId, @Valid @RequestBody NewCommentDto newComment){
+        return service.addComment(userId,eventId, newComment);
     }
 
     @GetMapping(path = "/{userId}/comment/{eventId}")
