@@ -7,18 +7,22 @@ import ru.practicum.dto.stats.ViewStats;
 import ru.practicum.ewm.model.event.Event;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
 public class ViewService {
     private StatsClient statsClient;
+
     public Map<Long, Integer> getViews(List<Event> result) {
-        if (result.isEmpty()|| result.get(0).getPublishedOn() == null) {
+        if (result.isEmpty() || result.get(0).getPublishedOn() == null) {
             return Collections.emptyMap();
         }
         LocalDateTime startDate;
-        if(result.size() > 1) {
+        if (result.size() > 1) {
             startDate = result.stream()
                     .map(Event::getPublishedOn)
                     .min(LocalDateTime::compareTo)

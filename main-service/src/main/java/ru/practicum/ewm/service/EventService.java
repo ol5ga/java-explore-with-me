@@ -11,7 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.client.stats.StatsClient;
 import ru.practicum.dto.stats.EndpointHit;
-import ru.practicum.dto.stats.ViewStats;
+import ru.practicum.ewm.config.AppName;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.event.*;
 import ru.practicum.ewm.dto.location.LocationDto;
@@ -34,7 +34,10 @@ import ru.practicum.ewm.repository.*;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +55,8 @@ public class EventService {
     private StatsClient statsClient;
     private ModelMapper mapper;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private AppName appClass;
 
     public List<EventShortDto> getUserEvents(long userId, int from, int size) {
         User initiator = userRepository.findById(userId).orElseThrow();
@@ -235,7 +240,7 @@ public class EventService {
         }
         Map<Long, Integer> views = viewService.getViews(result);
         return result.stream()
-                .map(e -> collectToEventFullDto(e, views.get(e.getId())))
+                .map(e -> collectToEventFullDto(e, views.getOrDefault(e.getId(), 0)))
                 .collect(Collectors.toList());
     }
 
@@ -248,7 +253,7 @@ public class EventService {
         if (request.getCategory() != null) {
             event.setCategory(categoryRepository.findById(request.getCategory()).orElseThrow());
         }
-        if (request.getDescription() != null&& !request.getDescription().isBlank()) {
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
             event.setDescription(request.getDescription());
         }
         if (request.getEventDate() != null) {
@@ -298,7 +303,7 @@ public class EventService {
         if (event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED)) {
             throw new StorageException("Запрос составлен некорректно");
         }
-        statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        statsClient.saveStats(new EndpointHit(appClass.getAppName(), httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(event, views.get(eventId));
     }
@@ -358,7 +363,7 @@ public class EventService {
         if (onlyAvailable != null && onlyAvailable) {
             List<ParticipationRequest> allRequest = requestRepository.findAllByEventIn(result);
             for (ParticipationRequest pR : allRequest) {
-                if(pR.getStatus().equals(ParticipationState.CONFIRMED)) {
+                if (pR.getStatus().equals(ParticipationState.CONFIRMED)) {
                     Event event1 = pR.getEvent();
                     event1.setConfirmedRequest(event1.getConfirmedRequest() + 1);
                 }

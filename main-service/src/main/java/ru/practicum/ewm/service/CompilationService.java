@@ -7,7 +7,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.client.stats.StatsClient;
-import ru.practicum.dto.stats.ViewStats;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
 import ru.practicum.ewm.dto.compilations.CompilationMapper;
@@ -24,8 +23,9 @@ import ru.practicum.ewm.repository.CompilationRepository;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.ParticipationRequestRepository;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
