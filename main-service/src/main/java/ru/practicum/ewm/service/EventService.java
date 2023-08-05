@@ -356,8 +356,15 @@ public class EventService {
         Map<Long, Integer> views = viewService.getViews(result);
 
         if (onlyAvailable != null && onlyAvailable) {
+            List<ParticipationRequest> allRequest = requestRepository.findAllByEventIn(result);
+            for (ParticipationRequest pR : allRequest) {
+                if(pR.getStatus().equals(ParticipationState.CONFIRMED)) {
+                    Event event1 = pR.getEvent();
+                    event1.setConfirmedRequest(event1.getConfirmedRequest() + 1);
+                }
+            }
             result = result.stream()
-                    .filter(e -> requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size() < e.getParticipantLimit())
+                    .filter(e -> e.getConfirmedRequest() < e.getParticipantLimit())
                     .collect(Collectors.toList());
         }
         List<EventShortDto> resultDto = result.stream()

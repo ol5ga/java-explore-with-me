@@ -51,5 +51,8 @@ public class Event {
     private EventState state;
     @Column
     private String title;
+
+    @Transient
+    private int confirmedRequest;
 }
 
