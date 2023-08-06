@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
+import ru.practicum.ewm.model.event.AdminStateAction;
 
 import java.time.LocalDateTime;
 @AllArgsConstructor
@@ -20,5 +21,5 @@ public class CommentAdminDto {
 
     private LocalDateTime created;
 
-    private CommentState state;
+    private AdminStateAction stateAction;
 }

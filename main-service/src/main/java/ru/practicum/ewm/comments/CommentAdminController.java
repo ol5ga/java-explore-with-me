@@ -2,8 +2,8 @@ package ru.practicum.ewm.comments;
 
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.model.event.AdminStateAction;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -26,8 +26,8 @@ public class CommentAdminController {
         return service.getList(rangeStart,rangeEnd,from,size);
     }
     @PatchMapping(path = "/{commentId}")
-    public CommentAdminDto updateStates(@PathVariable Long commentId){
-        return service.updateStates(commentId);
+    public CommentDto updateStates(@PathVariable Long commentId, @RequestParam AdminStateAction action){
+        return service.updateStates(commentId, action);
     }
 
 }

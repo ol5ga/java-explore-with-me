@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
+import ru.practicum.ewm.model.event.AdminStateAction;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.EventRepository;
@@ -27,15 +28,22 @@ public class CommentService {
         return new ArrayList<>();
     }
 
-    public CommentAdminDto updateStates(Long commentId) {
-        return new CommentAdminDto();
+    public CommentDto updateStates(Long commentId, AdminStateAction action) {
+        Comment comment = repository.findById(commentId).orElseThrow(() -> new StorageException("Коментарий не найден"));
+        if(action == AdminStateAction.PUBLISH){
+            comment.setState(CommentState.PUBLISHED);
+        } else if(action == AdminStateAction.REJECT){
+            comment.setState(CommentState.CANCELED);
+        }
+        repository.save(comment);
+        return CommentMapper.toCommentDto(comment);
     }
 
 
     public CommentDto addComment(long userId,long eventId, NewCommentDto newComment) {
         LocalDateTime now = LocalDateTime.now();
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
-        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Событие не найдено"));
+        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
         if(repository.existsByAuthor(author)){
             throw new ConflictException("Нельзя оставить комментрарий повторно");
         }
@@ -51,7 +59,6 @@ public class CommentService {
 
     public List<CommentDto> getComments(long userId, long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
-        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Событие не найдено"));
         List<Comment> comments = repository.findAllByEvent(event);
         return comments.stream()
                 .map(CommentMapper::toCommentDto)
@@ -60,7 +67,7 @@ public class CommentService {
 
     public void deleteComment(long userId, long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
-        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Событие не найдено"));
+        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
         Comment comment = repository.findFirstByEventAndAuthor(event,author);
         if(author.equals(comment.getAuthor())){
             repository.delete(comment);
