@@ -35,11 +35,14 @@ public class CommentService {
 
     EventRepository eventRepository;
     public List<CommentDto> getList(LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        if(rangeEnd == null){
+            rangeEnd = LocalDateTime.now();
+        }
         if(rangeEnd.isBefore(rangeStart)){
             throw new ValidationException("Неверно указан временной интервал");
         }
         Pageable page = PageRequest.of(from / size, size);
-        List<Comment> comments = repository.findAllCreatedIsAfterAndCreatedBeforeOrderByCreated(rangeStart,rangeEnd,page);
+        List<Comment> comments = repository.findAllByCreatedIsAfterAndCreatedIsBeforeOrderByCreated(rangeStart,rangeEnd,page);
         return comments.stream()
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
@@ -76,7 +79,7 @@ public class CommentService {
 
     public List<CommentDto> getComments(long userId, long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
-        List<Comment> comments = repository.findAllByEvent(event);
+        List<Comment> comments = repository.findAllByEventAndState(event, CommentState.PUBLISHED);
         return comments.stream()
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());

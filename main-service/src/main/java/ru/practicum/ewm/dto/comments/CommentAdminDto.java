@@ -1,5 +1,6 @@
 package ru.practicum.ewm.dto.comments;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public class CommentAdminDto {
     private EventShortDto event;
 
     private UserShortDto author;
-
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime created;
 
     private AdminStateAction stateAction;
