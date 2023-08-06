@@ -1,7 +1,10 @@
 package ru.practicum.ewm.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.exceptions.ValidationException;
 import ru.practicum.ewm.model.CommentState;
 import ru.practicum.ewm.dto.comments.NewCommentDto;
 import ru.practicum.ewm.dto.comments.CommentAdminDto;
@@ -31,8 +34,15 @@ public class CommentService {
     UserRepository userRepository;
 
     EventRepository eventRepository;
-    public List<CommentAdminDto> getList(LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
-        return new ArrayList<>();
+    public List<CommentDto> getList(LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        if(rangeEnd.isBefore(rangeStart)){
+            throw new ValidationException("Неверно указан временной интервал");
+        }
+        Pageable page = PageRequest.of(from / size, size);
+        List<Comment> comments = repository.findAllCreatedIsAfterAndCreatedBeforeOrderByCreated(rangeStart,rangeEnd,page);
+        return comments.stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(Collectors.toList());
     }
 
     public CommentDto updateStates(Long commentId, AdminStateAction action) {
@@ -82,6 +92,12 @@ public class CommentService {
     }
 
     public CommentDto updateComment(long userId, long commentId, NewCommentDto newComment) {
-       return new CommentDto();
+        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
+        Comment comment = repository.findById(commentId).orElseThrow(() -> new StorageException("Коментарий не найден"));
+        if(author != comment.getAuthor()){
+            throw new ValidationException("Коментарий может изменить только автор");
+        }
+        comment.setText(newComment.getText());
+        return CommentMapper.toCommentDto(repository.save(comment));
     }
 }
