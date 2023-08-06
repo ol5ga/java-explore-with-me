@@ -1,7 +1,6 @@
-package ru.practicum.ewm.model;
+package ru.practicum.ewm.comments;
 
 import lombok.*;
-import org.springframework.data.annotation.Id;
 import ru.practicum.ewm.comments.CommentState;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;

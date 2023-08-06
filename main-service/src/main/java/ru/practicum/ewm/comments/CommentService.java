@@ -3,7 +3,6 @@ package ru.practicum.ewm.comments;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.exceptions.StorageException;
-import ru.practicum.ewm.model.Comment;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.EventRepository;
