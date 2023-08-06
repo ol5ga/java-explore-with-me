@@ -1,2 +1,5 @@
 # java-explore-with-me
-Template repository for ExploreWithMe project.
+
+#
+ссылка на pull-request:
+https://github.com/ol5ga/java-explore-with-me/pull/6
