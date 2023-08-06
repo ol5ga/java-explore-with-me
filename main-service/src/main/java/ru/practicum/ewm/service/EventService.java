@@ -398,5 +398,4 @@ public class EventService {
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
         return EventMapper.toEventFullDto(event, confirmedRequests, categoryDto, userDto, locationDto, views);
     }
-
 }
