@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto {
-    private EventShortDto event;
+    private String event;
     private String text;
     private String authorName;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

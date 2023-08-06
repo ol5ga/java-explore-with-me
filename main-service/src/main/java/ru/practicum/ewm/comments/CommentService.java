@@ -2,6 +2,7 @@ package ru.practicum.ewm.comments;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
@@ -11,6 +12,7 @@ import ru.practicum.ewm.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -34,7 +36,9 @@ public class CommentService {
         LocalDateTime now = LocalDateTime.now();
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
         User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Событие не найдено"));
-//TODO проверка, что пользователь еще не оставлял коментарий
+        if(repository.existsByAuthor(author)){
+            throw new ConflictException("Нельзя оставить комментрарий повторно");
+        }
         Comment comment = Comment.builder()
                 .text(newComment.getText())
                 .event(event)
@@ -42,12 +46,16 @@ public class CommentService {
                 .created(now)
                 .state(CommentState.PENDING)
                 .build();
-        repository.save(comment);
-        return new CommentDto();
+        return CommentMapper.toCommentDto(repository.save(comment));
     }
 
     public List<CommentDto> getComments(long userId, long eventId) {
-        return new ArrayList<>();
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
+        User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Событие не найдено"));
+        List<Comment> comments = repository.findAllByEvent(event);
+        return comments.stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(Collectors.toList());
     }
 
     public void deleteComment(long userId, long eventId) {
