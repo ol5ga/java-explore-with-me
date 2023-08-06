@@ -1,4 +1,4 @@
-package ru.practicum.ewm.controller;
+package ru.practicum.ewm.controller.comment;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +29,7 @@ public class CommentPrivateController {
     }
 
     @DeleteMapping(path = "/{userId}/comment/{eventId}")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void deleteComment(@PathVariable long userId, @PathVariable long eventId){
         service.deleteComment(userId, eventId);
     }

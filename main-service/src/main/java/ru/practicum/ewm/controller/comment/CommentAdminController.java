@@ -1,4 +1,4 @@
-package ru.practicum.ewm.controller;
+package ru.practicum.ewm.controller.comment;
 
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

@@ -3,8 +3,8 @@ package ru.practicum.ewm.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Pageable;
 
-import ru.practicum.ewm.model.Comment;
-import ru.practicum.ewm.model.CommentState;
+import ru.practicum.ewm.model.comment.Comment;
+import ru.practicum.ewm.model.comment.CommentState;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 

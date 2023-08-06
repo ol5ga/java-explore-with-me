@@ -5,14 +5,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.exceptions.ValidationException;
-import ru.practicum.ewm.model.CommentState;
+import ru.practicum.ewm.model.comment.CommentState;
 import ru.practicum.ewm.dto.comments.NewCommentDto;
-import ru.practicum.ewm.dto.comments.CommentAdminDto;
 import ru.practicum.ewm.dto.comments.CommentDto;
 import ru.practicum.ewm.dto.comments.CommentMapper;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
-import ru.practicum.ewm.model.Comment;
+import ru.practicum.ewm.model.comment.Comment;
 import ru.practicum.ewm.model.event.AdminStateAction;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
@@ -21,7 +20,6 @@ import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
