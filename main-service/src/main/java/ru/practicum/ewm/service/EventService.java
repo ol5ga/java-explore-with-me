@@ -216,10 +216,10 @@ public class EventService {
             conditions.add(event.state.in(states));
         }
         if (categoriesId != null) {
-            List<Category> categories = categoriesId.stream()
-                    .map(cat -> categoryRepository.findById(cat).orElseThrow())
-                    .collect(Collectors.toList());
-            conditions.add(event.category.in(categories));
+            List<Category> categories = categoryRepository.findByIdIn(categoriesId);
+            if (categoriesId.size() == categories.size()) {
+                conditions.add(event.category.in(categories));
+            }
         }
         if (rangeStart != null) {
             conditions.add(event.eventDate.goe(rangeStart));
@@ -333,7 +333,9 @@ public class EventService {
         }
         if (categoriesId != null) {
             List<Category> categories = categoryRepository.findByIdIn(categoriesId);
-            conditions.add(event.category.in(categories));
+            if (categoriesId.size() == categories.size()) {
+                conditions.add(event.category.in(categories));
+            }
         }
         if (paid != null) {
             conditions.add(event.paid.eq(paid));
@@ -357,7 +359,7 @@ public class EventService {
         }
         Iterable<Event> events = repository.findAll(request, page);
         events.forEach(result::add);
-        statsClient.saveStats(new EndpointHit("ewm-main-service", httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(formatter)));
+        statsClient.saveStats(new EndpointHit(appClass.getAppName(), httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), now.format(formatter)));
         Map<Long, Integer> views = viewService.getViews(result);
 
         if (onlyAvailable != null && onlyAvailable) {
@@ -374,7 +376,7 @@ public class EventService {
         }
         List<EventShortDto> resultDto = result.stream()
                 .map(e -> EventMapper.toEventShortDto(e,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(e, ParticipationState.CONFIRMED).size(),
+                        e.getConfirmedRequest(),
                         mapper.map(e.getCategory(), CategoryDto.class),
                         mapper.map(e.getInitiator(), UserShortDto.class), views))
                 .collect(Collectors.toList());
