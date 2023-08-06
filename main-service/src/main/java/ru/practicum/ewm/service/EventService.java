@@ -303,7 +303,7 @@ public class EventService {
         if (event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED)) {
             throw new StorageException("Запрос составлен некорректно");
         }
-        statsClient.saveStats(new EndpointHit(appClass.getAppName(), httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        statsClient.saveStats(new EndpointHit(appClass.getAppName(), httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(formatter)));
         Map<Long, Integer> views = viewService.getViews(List.of(event));
         return collectToEventFullDto(event, views.get(eventId));
     }
