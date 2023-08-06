@@ -1,6 +1,9 @@
 package ru.practicum.ewm.model.comment;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 

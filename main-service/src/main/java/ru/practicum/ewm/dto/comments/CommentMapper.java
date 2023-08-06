@@ -6,7 +6,7 @@ import ru.practicum.ewm.model.comment.Comment;
 @UtilityClass
 public class CommentMapper {
 
-    public CommentDto toCommentDto (Comment comment){
+    public CommentDto toCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .event(comment.getEvent().getAnnotation())

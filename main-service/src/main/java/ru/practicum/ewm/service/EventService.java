@@ -281,18 +281,18 @@ public class EventService {
             event.setRequestModeration(request.getRequestModeration());
         }
         if (request.getStateAction() != null) {
-            if (request.getStateAction().equals(AdminStateAction.PUBLISH) &&
+            if (request.getStateAction().equals(AdminStateAction.PUBLISH_EVENT) &&
                     (event.getState().equals(EventState.PUBLISHED) || (event.getState().equals(EventState.CANCELED)))) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
-            if (request.getStateAction().equals(AdminStateAction.REJECT)
+            if (request.getStateAction().equals(AdminStateAction.REJECT_EVENT)
                     && event.getState().equals(EventState.PUBLISHED)) {
                 throw new ConflictException("Событие не удовлетворяет правилам редактирования");
             }
-            if (request.getStateAction().equals(AdminStateAction.PUBLISH)) {
+            if (request.getStateAction().equals(AdminStateAction.PUBLISH_EVENT)) {
                 event.setPublishedOn(now);
                 event.setState(EventState.PUBLISHED);
-            } else if (request.getStateAction().equals(AdminStateAction.REJECT)) {
+            } else if (request.getStateAction().equals(AdminStateAction.REJECT_EVENT)) {
                 event.setState(EventState.CANCELED);
             }
         }
