@@ -1,4 +1,4 @@
-package ru.practicum.ewm.comments;
+package ru.practicum.ewm.dto.comments;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

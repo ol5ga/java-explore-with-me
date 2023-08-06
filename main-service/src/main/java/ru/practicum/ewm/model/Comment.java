@@ -1,7 +1,6 @@
-package ru.practicum.ewm.comments;
+package ru.practicum.ewm.model;
 
 import lombok.*;
-import ru.practicum.ewm.comments.CommentState;
 import ru.practicum.ewm.model.event.Event;
 import ru.practicum.ewm.model.user.User;
 

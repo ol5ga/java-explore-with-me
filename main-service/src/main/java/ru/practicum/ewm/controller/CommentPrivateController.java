@@ -1,8 +1,11 @@
-package ru.practicum.ewm.comments;
+package ru.practicum.ewm.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.service.CommentService;
+import ru.practicum.ewm.dto.comments.NewCommentDto;
+import ru.practicum.ewm.dto.comments.CommentDto;
 
 import javax.validation.Valid;
 import java.util.List;
