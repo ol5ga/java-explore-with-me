@@ -62,9 +62,10 @@ public class EventService {
         User initiator = userRepository.findById(userId).orElseThrow();
         List<Event> events = repository.findAllByInitiatorOrderById(initiator, PageRequest.of(from / size, size));
         Map<Long, Integer> views = viewService.getViews(events);
+        addConfirmedRequest(events);
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
-                        requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size(),
+                        event.getConfirmedRequest(),
                         mapper.map(event.getCategory(), CategoryDto.class),
                         mapper.map(event.getInitiator(), UserShortDto.class), views))
                 .collect(Collectors.toList());
@@ -81,7 +82,8 @@ public class EventService {
 
         Event event = repository.save(EventMapper.toEvent(request, category, now, user, location));
         Map<Long, Integer> views = viewService.getViews(List.of(event));
-        return collectToEventFullDto(event, views.get(event.getId()));
+        Integer confirmedRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
+        return collectToEventFullDto(event, confirmedRequest, views.get(event.getId()));
     }
 
 
@@ -91,7 +93,8 @@ public class EventService {
             throw new ValidationException("Запрос составлен некорректно");
         }
         Map<Long, Integer> views = viewService.getViews(List.of(event));
-        return collectToEventFullDto(event, views.get(eventId));
+        Integer confirmedRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
+        return collectToEventFullDto(event, confirmedRequest, views.get(eventId));
     }
 
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
@@ -142,7 +145,8 @@ public class EventService {
             event.setTitle(request.getTitle());
         }
         Map<Long, Integer> views = viewService.getViews(List.of(event));
-        return collectToEventFullDto(repository.save(event), views.get(eventId));
+        Integer confirmedRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
+        return collectToEventFullDto(repository.save(event), confirmedRequest, views.get(eventId));
     }
 
     public List<ParticipationRequestDto> getEventsRequests(long userId, long eventId) {
@@ -239,8 +243,9 @@ public class EventService {
             events.forEach(result::add);
         }
         Map<Long, Integer> views = viewService.getViews(result);
+        addConfirmedRequest(result);
         return result.stream()
-                .map(e -> collectToEventFullDto(e, views.getOrDefault(e.getId(), 0)))
+                .map(e -> collectToEventFullDto(e, e.getConfirmedRequest(), views.getOrDefault(e.getId(), 0)))
                 .collect(Collectors.toList());
     }
 
@@ -295,7 +300,8 @@ public class EventService {
             event.setTitle(request.getTitle());
         }
         Map<Long, Integer> views = viewService.getViews(List.of(event));
-        return collectToEventFullDto(repository.save(event), views.get(eventId));
+        Integer confirmedRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
+        return collectToEventFullDto(repository.save(event), confirmedRequest, views.get(eventId));
     }
 
     public EventFullDto getEvent(long eventId, HttpServletRequest httpRequest) {
@@ -305,16 +311,10 @@ public class EventService {
         }
         statsClient.saveStats(new EndpointHit(appClass.getAppName(), httpRequest.getRequestURI(), httpRequest.getRemoteAddr(), LocalDateTime.now().format(formatter)));
         Map<Long, Integer> views = viewService.getViews(List.of(event));
-        return collectToEventFullDto(event, views.get(eventId));
+        Integer confirmedRequest = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
+        return collectToEventFullDto(event, confirmedRequest, views.get(eventId));
     }
 
-    private EventFullDto collectToEventFullDto(Event event, Integer views) {
-        Integer confirmedRequests = requestRepository.findAllByEventAndStatusOrderByCreated(event, ParticipationState.CONFIRMED).size();
-        CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
-        UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
-        LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
-        return EventMapper.toEventFullDto(event, confirmedRequests, categoryDto, userDto, locationDto, views);
-    }
 
     public List<EventShortDto> getEvents(String text, List<Long> categoriesId, Boolean paid, LocalDateTime rangeStart,
                                          LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest httpRequest) {
@@ -363,13 +363,7 @@ public class EventService {
         Map<Long, Integer> views = viewService.getViews(result);
 
         if (onlyAvailable != null && onlyAvailable) {
-            List<ParticipationRequest> allRequest = requestRepository.findAllByEventIn(result);
-            for (ParticipationRequest pR : allRequest) {
-                if (pR.getStatus().equals(ParticipationState.CONFIRMED)) {
-                    Event event1 = pR.getEvent();
-                    event1.setConfirmedRequest(event1.getConfirmedRequest() + 1);
-                }
-            }
+            addConfirmedRequest(result);
             result = result.stream()
                     .filter(e -> e.getConfirmedRequest() < e.getParticipantLimit())
                     .collect(Collectors.toList());
@@ -386,6 +380,23 @@ public class EventService {
                     .collect(Collectors.toList());
         }
         return resultDto;
+    }
+
+    private void addConfirmedRequest(List<Event> result) {
+        List<ParticipationRequest> allRequest = requestRepository.findAllByEventIn(result);
+        for (ParticipationRequest pR : allRequest) {
+            if (pR.getStatus().equals(ParticipationState.CONFIRMED)) {
+                Event event1 = pR.getEvent();
+                event1.setConfirmedRequest(event1.getConfirmedRequest() + 1);
+            }
+        }
+    }
+
+    private EventFullDto collectToEventFullDto(Event event, Integer confirmedRequests, Integer views) {
+        CategoryDto categoryDto = mapper.map(event.getCategory(), CategoryDto.class);
+        UserShortDto userDto = mapper.map(event.getInitiator(), UserShortDto.class);
+        LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
+        return EventMapper.toEventFullDto(event, confirmedRequests, categoryDto, userDto, locationDto, views);
     }
 
 }
