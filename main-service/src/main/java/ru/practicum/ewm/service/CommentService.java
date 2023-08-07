@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.comments.CommentDto;
 import ru.practicum.ewm.dto.comments.CommentMapper;
 import ru.practicum.ewm.dto.comments.NewCommentDto;
@@ -18,8 +19,6 @@ import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.CommentRepository;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
-
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +47,7 @@ public class CommentService {
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public CommentDto updateStates(Long commentId, StateAction action) {
         Comment comment = repository.findById(commentId).orElseThrow(() -> new StorageException("Комментарий не найден"));
