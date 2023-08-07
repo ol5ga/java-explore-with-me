@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.request.ParticipationRequestDto;
 import ru.practicum.ewm.dto.request.RequestMapper;
 import ru.practicum.ewm.exceptions.ConflictException;
@@ -42,6 +43,7 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public ParticipationRequestDto addRequest(long userId, long eventId) {
         LocalDateTime now = LocalDateTime.now();
         User requester = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
@@ -76,6 +78,7 @@ public class RequestService {
     }
 
 
+    @Transactional
     public ParticipationRequestDto canceledRequest(long userId, long requestId) {
         User requester = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
         ParticipationRequest request = repository.findById(requestId).orElseThrow(() -> new StorageException("Запрос не найден или недоступен"));

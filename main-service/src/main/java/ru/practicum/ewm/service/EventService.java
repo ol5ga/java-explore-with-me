@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.client.stats.StatsClient;
 import ru.practicum.dto.stats.EndpointHit;
 import ru.practicum.ewm.config.AppName;
@@ -71,6 +72,7 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public EventFullDto addEvent(long userId, NewEventDto request) {
         LocalDateTime now = LocalDateTime.now();
         if (request.getEventDate().isBefore(now.plusHours(2))) {
@@ -97,6 +99,7 @@ public class EventService {
         return collectToEventFullDto(event, confirmedRequest, views.get(eventId));
     }
 
+    @Transactional
     public EventFullDto updateEvent(long userId, long eventId, UpdateEventUserRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Event event = repository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено или недоступно"));
@@ -160,6 +163,7 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public EventRequestStatusUpdateResult updateRequestStatus(long userId, long eventId, EventRequestStatusUpdateRequest request) {
         if (request == null) {
             throw new ConflictException("Не передан список заявок");
@@ -249,6 +253,7 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public EventFullDto adminUpdateEvent(long eventId, UpdateEventAdminRequest request) {
         Event event = repository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено или недоступно"));
         LocalDateTime now = LocalDateTime.now();
@@ -398,5 +403,4 @@ public class EventService {
         LocationDto locationDto = mapper.map(event.getLocation(), LocationDto.class);
         return EventMapper.toEventFullDto(event, confirmedRequests, categoryDto, userDto, locationDto, views);
     }
-
 }

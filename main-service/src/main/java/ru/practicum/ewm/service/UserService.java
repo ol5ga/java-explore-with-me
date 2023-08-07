@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.user.UserDto;
 import ru.practicum.ewm.dto.user.UserMapper;
 import ru.practicum.ewm.dto.user.UserRequest;
@@ -25,6 +26,7 @@ public class UserService {
     private UserRepository repository;
     private ModelMapper mapper;
 
+    @Transactional
     public UserDto addUser(UserRequest userRequest) {
         User user;
         try {
@@ -48,6 +50,7 @@ public class UserService {
 
     }
 
+    @Transactional
     public void deleteUser(long id) {
         if (repository.existsById(id)) {
             repository.deleteById(id);

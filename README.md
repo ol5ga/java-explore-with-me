@@ -1,2 +1,8 @@
-# java-explore-with-me
-Template repository for ExploreWithMe project.
+## java-explore-with-me
+ 
+Приложение позволяет пользователям делиться информацией об интересных событиях и находить компанию для участия в них.  
+Пользователи, могут создать свое событие или становится участниками события, предложенного другими.
+###
+**ссылка на pull-request:**
+
+https://github.com/ol5ga/java-explore-with-me/pull/6

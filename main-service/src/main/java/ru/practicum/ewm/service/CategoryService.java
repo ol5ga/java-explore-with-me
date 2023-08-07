@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.category.NewCategoryDto;
 import ru.practicum.ewm.exceptions.ConflictException;
 import ru.practicum.ewm.exceptions.StorageException;
@@ -24,6 +25,7 @@ public class CategoryService {
     private EventRepository eventRepository;
     private ModelMapper mapper;
 
+    @Transactional
     public Category addCategory(NewCategoryDto name) {
         Category category;
         try {
@@ -35,6 +37,7 @@ public class CategoryService {
     }
 
 
+    @Transactional
     public void deleteCategory(long id) {
         Category category = repository.findById(id).orElseThrow(() -> new StorageException("Категория не найдена или недоступна"));
 
