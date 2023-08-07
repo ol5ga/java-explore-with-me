@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CommentPrivateController {
 
-    CommentService service;
+    private final CommentService service;
 
     @PostMapping(path = "/{userId}/comment/{eventId}")
     @ResponseStatus(code = HttpStatus.CREATED)

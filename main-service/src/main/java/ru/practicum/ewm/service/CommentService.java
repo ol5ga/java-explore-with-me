@@ -18,6 +18,8 @@ import ru.practicum.ewm.model.user.User;
 import ru.practicum.ewm.repository.CommentRepository;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,11 +29,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CommentService {
 
-    CommentRepository repository;
+    private final CommentRepository repository;
 
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
     public List<CommentDto> getList(LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         if (rangeEnd == null) {
@@ -46,7 +48,7 @@ public class CommentService {
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     public CommentDto updateStates(Long commentId, StateAction action) {
         Comment comment = repository.findById(commentId).orElseThrow(() -> new StorageException("Комментарий не найден"));
         if (action == StateAction.PUBLISH) {
@@ -59,6 +61,7 @@ public class CommentService {
     }
 
 
+    @Transactional
     public CommentDto addComment(long userId, long eventId, NewCommentDto newComment) {
         LocalDateTime now = LocalDateTime.now();
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
@@ -84,6 +87,7 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void deleteComment(long userId, long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new StorageException("Событие не найдено"));
         User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
@@ -93,6 +97,7 @@ public class CommentService {
         }
     }
 
+    @Transactional
     public CommentDto updateComment(long userId, long commentId, NewCommentDto newComment) {
         User author = userRepository.findById(userId).orElseThrow(() -> new StorageException("Пользователь не найден"));
         Comment comment = repository.findById(commentId).orElseThrow(() -> new StorageException("Коментарий не найден"));

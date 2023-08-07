@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.client.stats.StatsClient;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.compilations.CompilationDto;
@@ -41,6 +42,7 @@ public class CompilationService {
 
     private ModelMapper mapper;
 
+    @Transactional
     public CompilationDto addCompilation(NewCompilationDto request) {
         List<Event> events;
         if (request.getPinned() == null) {
@@ -60,11 +62,13 @@ public class CompilationService {
         return collectToCompilationDto(compilation);
     }
 
+    @Transactional
     public void deleteCompilation(Long compId) {
         Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
         repository.delete(compilation);
     }
 
+    @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
         Compilation compilation = repository.findById(compId).orElseThrow(() -> new StorageException("Подборка не найдена или недоступна"));
         if (request.getPinned() != null) {
